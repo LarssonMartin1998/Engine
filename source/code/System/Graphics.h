@@ -15,6 +15,7 @@ class Graphics
 public:
 
 	Graphics();
+	Graphics(const Graphics&);
 	~Graphics();
 
 	bool Initialize(int, int, HWND);
@@ -25,6 +26,8 @@ public:
 private:
 
 	bool Render();
+
+	D3D* direct3D;
 
 };
 

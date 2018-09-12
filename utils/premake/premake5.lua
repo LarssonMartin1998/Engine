@@ -20,8 +20,6 @@ group "Modules"
 -- Add any modules under the group "Modules", add dependencies directly below a module. Remember to also add the modules to the main project below if it's necessary.
 -- modules.module "DirectX11"
 modules.module "System"
-	modules.links "DirectX11"
-modules.module "DirectX11"
 
 group "Executables"
 
@@ -40,7 +38,6 @@ project(PRODUCT_NAME)
 	editandcontinue "Off"
 
 	-- Include third-party libraries for this project.
-	--modules.dependson "DirectX11"
 	modules.links "System"
 
 	-- Global per-configuration settings.
