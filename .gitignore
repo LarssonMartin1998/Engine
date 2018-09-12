@@ -329,5 +329,11 @@ ASALocalRun/
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
 
+# Files created when building the project
 *build/
+
+# the actual game executables.
 /game/*.exe
+
+# VS solution files
+*.sln
