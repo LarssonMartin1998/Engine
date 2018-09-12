@@ -20,6 +20,7 @@ class Application
 public:
 
 	Application();
+	Application(const Application&);
 	~Application();
 
 	bool Initialize();

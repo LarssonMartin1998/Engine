@@ -10,6 +10,7 @@ class Input
 public:
 
 	Input();
+	Input(const Input&);
 	~Input();
 
 	bool Initialize();

@@ -10,6 +10,11 @@ Application::Application()
 
 }
 
+Application::Application(const Application& application)
+{
+
+}
+
 Application::~Application()
 {
 

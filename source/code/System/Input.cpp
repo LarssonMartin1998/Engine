@@ -5,6 +5,11 @@ Input::Input()
 
 }
 
+Input::Input(const Input& input)
+{
+
+}
+
 Input::~Input()
 {
 
