@@ -1,12 +1,14 @@
 #include "Graphics.h"
 
+#include "D3D.h"
+
 Graphics::Graphics()
 : direct3D (nullptr)
 {
 
 }
 
-Graphics::Graphics(const Graphics& graphics)
+Graphics::Graphics(const Graphics& /*graphics*/)
 {
 
 }
@@ -20,7 +22,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 {
 	bool result;
 
-	direct3D = new D3D;
+	direct3D = new D3D();
 	if (!direct3D)
 	{
 		return false;
@@ -29,7 +31,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	result = direct3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initalize Direct3D", L"Error", MB_OK);
+		MessageBox(hwnd, "Could not initalize Direct3D", "Error", MB_OK);
 		return false;
 	}
 
@@ -62,7 +64,7 @@ bool Graphics::Frame()
 bool Graphics::Render()
 {
 	// Clear the buffers to begin the scene.
-	direct3D->BeginScene(0.5f, 0.5f, 0.5f, 1.0f);
+	direct3D->BeginScene(1.0f, 1.0f, 0.0f, 1.0f);
 
 	// Present the rendered scene to the screen.
 	direct3D->EndScene();
