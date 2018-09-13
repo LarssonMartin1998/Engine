@@ -116,7 +116,6 @@ void Application::Run()
 				done = true;
 			}
 		}
-
 	}
 
 	return;
