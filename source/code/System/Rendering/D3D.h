@@ -1,4 +1,6 @@
-#pragma once
+#ifndef _D3D_H_
+#define _D3D_H_
+
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
@@ -7,9 +9,6 @@
 #include <directxmath.h>
 
 #define _XM_NO_INTRINSICS_
-
-#ifndef _D3D_H_
-#define _D3D_H_
 
 __declspec(align(16)) class D3D
 {
