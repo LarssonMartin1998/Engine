@@ -47,6 +47,9 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	// Set the initial position of the camera.
+	camera->SetPosition(0.0f, 0.0f, -5.0f);
+
 	model = new Model();
 	if (!model)
 	{
@@ -56,19 +59,20 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	result = model->Initialize(direct3D->GetDevice());
 	if (!result)
 	{
+		MessageBox(hwnd, "Could not initialize the model object.", "Error", MB_OK);
 		return false;
 	}
 
 	colorShader = new ColorShader();
 	if (!colorShader)
 	{
-		MessageBox(hwnd, "Could not initialize the color shader object.", "Error", MB_OK);
 		return false;
 	}
 
 	result = colorShader->Initialize(direct3D->GetDevice(), hwnd);
 	if (!result)
 	{
+		MessageBox(hwnd, "Could not initialize the color shader object.", "Error", MB_OK);
 		return false;
 	}
 
