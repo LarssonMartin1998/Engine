@@ -39,10 +39,10 @@ bool D3D::Initialize(int screenWidth, int screenHeight, bool vSync, HWND hwnd, b
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
 	D3D_FEATURE_LEVEL featureLevel;
 	ID3D11Texture2D* backBufferPtr;
-	D3D11_TEXTURE2D_DESC depthBufferDesc;
+	D3D11_TEXTURE2D_DESC depthBufferDesc; 
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
-	
+	D3D11_RASTERIZER_DESC rasterDesc;
 	D3D11_VIEWPORT viewport;
 	float fieldOfView;
 	float screenAspect;
@@ -292,9 +292,6 @@ bool D3D::Initialize(int screenWidth, int screenHeight, bool vSync, HWND hwnd, b
 	// Initialize the depth stencil view.
 	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
 
-	// Initialize the depth stencil view
-	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
-
 	// Set up the depth stencil view description
 	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
@@ -311,7 +308,6 @@ bool D3D::Initialize(int screenWidth, int screenHeight, bool vSync, HWND hwnd, b
 	deviceContext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
 
 	// Setup the raster descirption which will determine how and what polygons will be drawn.
-	D3D11_RASTERIZER_DESC rasterDesc;
 	rasterDesc.AntialiasedLineEnable = false;
 	rasterDesc.CullMode = D3D11_CULL_BACK;
 	rasterDesc.DepthBias = 0;
