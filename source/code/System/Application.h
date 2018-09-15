@@ -33,7 +33,7 @@ private:
 	void ShutdownWindows();
 	bool Frame();
 
-	LPCWSTR applicationName;
+	LPCSTR applicationName;
 	HINSTANCE hinstance;
 	HWND hwnd;
 

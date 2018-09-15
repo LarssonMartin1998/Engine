@@ -85,8 +85,9 @@ bool Application::Initialize()
 
 void Application::Run()
 {
+	bool result;
+	bool done;
 	MSG msg;
-	bool done, result;
 
 	// Initialize the message structure.
 	ZeroMemory(&msg, sizeof(MSG));
@@ -117,8 +118,6 @@ void Application::Run()
 			}
 		}
 	}
-
-	return;
 }
 
 void Application::Shutdown()
@@ -151,7 +150,7 @@ void Application::InitializeWindows(int& screenWidth, int& screenHeight)
 	hinstance = GetModuleHandle(NULL);
 
 	// Give the application a name.
-	applicationName = L"Engine";
+	applicationName = "Engine";
 
 	// Setup the windows class with default settings.
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
@@ -164,7 +163,7 @@ void Application::InitializeWindows(int& screenWidth, int& screenHeight)
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wc.lpszMenuName = NULL;
-	wc.lpszClassName = (LPCSTR)applicationName;
+	wc.lpszClassName = applicationName;
 	wc.cbSize = sizeof(WNDCLASSEX);
 
 	// Register the window class.
