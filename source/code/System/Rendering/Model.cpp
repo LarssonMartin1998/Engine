@@ -53,8 +53,8 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	D3D11_SUBRESOURCE_DATA indexData;
 
 	// Fake creating a triangle.
-	vertexCount = 4;
-	indexCount = 4;
+	vertexCount = 3;
+	indexCount = 3;
 
 	// Create the vertex array.
 	vertices = new VertexType[vertexCount];
@@ -71,23 +71,19 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	}
 
 	// Load the vertex array with data.
-	vertices[0].position = DirectX::XMFLOAT3(1.0f, -1.0f, 0.0f);
-	vertices[0].color = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+	vertices[0].position = DirectX::XMFLOAT3(-1.0f, -1.0f, 0.0f);  // Bottom left.
+	vertices[0].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 
-	vertices[1].position = DirectX::XMFLOAT3(3.0f, -1.0, 0.0f);
+	vertices[1].position = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);  // Top middle.
 	vertices[1].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 
-	vertices[2].position = DirectX::XMFLOAT3(1.0f, -3.0, 0.0f);
-	vertices[2].color = DirectX::XMFLOAT4(1.0f, .0f, 0.0f, 1.0f);
-
-	vertices[3].position = DirectX::XMFLOAT3(3.0f, -3.0, 0.0f);
-	vertices[3].color = DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f);
+	vertices[2].position = DirectX::XMFLOAT3(1.0f, -1.0f, 0.0f);  // Bottom right.
+	vertices[2].color = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 
 	// Load the index array with data.
-	indices[0] = 0;
-	indices[1] = 1;
-	indices[2] = 2;
-	indices[3] = 3;
+	indices[0] = 0; // Bottom left.
+	indices[1] = 1; // Top middle.
+	indices[2] = 2; // Bottom right.
 
 	// Set up the description of the static vertex buffer.
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -122,7 +118,7 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	indexData.SysMemPitch = 0;
 	indexData.SysMemSlicePitch = 0;
 
-	// Now create the vertex buffer.
+	// Now create the index buffer.
 	result = device->CreateBuffer(&indexBufferDesc, &indexData, &indexBuffer);
 	if (FAILED(result))
 	{
