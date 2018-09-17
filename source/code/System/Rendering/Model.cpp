@@ -1,5 +1,6 @@
 #include "Model.h"
 
+#include <fstream>
 #include <d3d11.h>
 
 #include "Texture.h"
@@ -7,6 +8,7 @@
 Model::Model()
 : vertexBuffer (nullptr)
 , indexBuffer (nullptr)
+, modelData (nullptr)
 , texture (nullptr)
 {
 
@@ -22,11 +24,16 @@ Model::~Model()
 
 }
 
-bool Model::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* textureFilename)
+bool Model::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* modelFilename, char* textureFilename)
 {
 	bool result;
 
-	// Initialize the vertex and index buffers
+	result = LoadModel(modelFilename);
+	if (!result)
+	{
+		return false;
+	}
+
 	result = InitializeBuffers(device);
 	if (!result)
 	{
@@ -47,6 +54,8 @@ void Model::Shutdown()
 {
 	ReleaseTexture();
 
+	ReleaseModel();
+
 	ReleaseBuffers();
 }
 
@@ -59,19 +68,15 @@ void Model::Render(ID3D11DeviceContext* deviceContext)
 bool Model::InitializeBuffers(ID3D11Device* device)
 {
 	HRESULT result;
-	VertexType* vertices;
+	VertexShaderType* vertices;
 	unsigned long* indices;
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	D3D11_BUFFER_DESC indexBufferDesc;
 	D3D11_SUBRESOURCE_DATA vertexData;
 	D3D11_SUBRESOURCE_DATA indexData;
 
-	// Fake creating a triangle.
-	vertexCount = 3;
-	indexCount = 3;
-
 	// Create the vertex array.
-	vertices = new VertexType[vertexCount];
+	vertices = new VertexShaderType[vertexCount];
 	if (!vertices)
 	{
 		return false;
@@ -84,28 +89,41 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 		return false;
 	}
 
-	// Load the vertex array with data.
-	vertices[0].position = DirectX::XMFLOAT3(-1.0f, -1.0f, 0.0f);  // Bottom left.
+	//// Load the vertex array and index array with data.
+	//for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
+	//{
+	//	ModelData& mdl = modelData[vertexIndex];
+	//	VertexShaderType& vertex = vertices[vertexIndex];
+
+	//	vertex.position = DirectX::XMFLOAT3(mdl.x, mdl.y, mdl.z);
+	//	vertex.normal = DirectX::XMFLOAT3(mdl.normalX, mdl.normalY, mdl.normalZ);
+	//	vertex.texture = DirectX::XMFLOAT2(mdl.u, mdl.v);
+
+	//	indices[vertexIndex] = vertexIndex;
+	//}
+
+	vertexCount = 3;
+	indexCount = 3;
+
+	vertices[0].position = DirectX::XMFLOAT3(-1.0f, 1.0f, 0.0f);
+	vertices[0].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
 	vertices[0].texture = DirectX::XMFLOAT2(0.0f, 1.0f);
-	vertices[0].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
 
-	vertices[1].position = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);  // Top middle.
+	vertices[1].position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+	vertices[1].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
 	vertices[1].texture = DirectX::XMFLOAT2(0.5f, 0.0f);
-	vertices[0].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
 
-	vertices[2].position = DirectX::XMFLOAT3(1.0f, -1.0f, 0.0f);  // Bottom right.
+	vertices[2].position = DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f);
+	vertices[2].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
 	vertices[2].texture = DirectX::XMFLOAT2(1.0f, 1.0f);
-	vertices[0].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
 
-
-	// Load the index array with data.
-	indices[0] = 0; // Bottom left.
-	indices[1] = 1; // Top middle.
-	indices[2] = 2; // Bottom right.
+	indices[0] = 0;
+	indices[1] = 1;
+	indices[2] = 2;
 
 	// Set up the description of the static vertex buffer.
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(VertexType) * vertexCount;
+	vertexBufferDesc.ByteWidth = sizeof(VertexShaderType) * vertexCount;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
@@ -168,6 +186,15 @@ void Model::ReleaseBuffers()
 	}
 }
 
+void Model::ReleaseModel()
+{
+	if (modelData)
+	{
+		delete modelData;
+		modelData = nullptr;
+	}
+}
+
 void Model::ReleaseTexture()
 {
 	if (texture)
@@ -184,7 +211,7 @@ void Model::RenderBuffers(ID3D11DeviceContext* deviceContext)
 	unsigned offset;
 
 	// Set the buffer stride and offset.
-	stride = sizeof(VertexType);
+	stride = sizeof(VertexShaderType);
 	offset = 0;
 
 	// Set the vertex buffer to tactive in the input assembler so it can be rendered.
@@ -195,6 +222,57 @@ void Model::RenderBuffers(ID3D11DeviceContext* deviceContext)
 
 	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+bool Model::LoadModel(char* filename)
+{
+	std::ifstream fileInput;
+	char input;
+
+	fileInput.open(filename);
+
+	if (fileInput.fail())
+	{
+		return false;
+	}
+
+	// Read up the value of vertex count.
+	fileInput.get(input);
+	while (input != ':')
+	{
+		fileInput.get(input);
+	}
+
+	fileInput >> vertexCount;
+	indexCount = vertexCount;
+
+	modelData = new ModelData;
+	if (!modelData)
+	{
+		return false;
+	}
+
+	// Read up to the beginning of the data.
+	fileInput.get(input);
+	while (input != ':')
+	{
+		fileInput.get(input);
+	}
+	fileInput.get(input);
+	fileInput.get(input);
+
+	// Read the vertex data.
+	for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
+	{
+		ModelData& md = modelData[vertexIndex];
+		fileInput >> md.x >> md.y >> md.z;
+		fileInput >> md.u >> md.v;
+		fileInput >> md.normalX >> md.normalY >> md.normalZ;
+	}
+
+	fileInput.close();
+
+	return true;
 }
 
 bool Model::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename)

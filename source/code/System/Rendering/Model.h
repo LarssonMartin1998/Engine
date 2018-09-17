@@ -19,7 +19,7 @@ public:
 	Model(const Model&);
 	~Model();
 
-	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, char*);
+	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, char*, char*);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
@@ -31,22 +31,33 @@ public:
 
 private:
 
-	struct VertexType
+	struct VertexShaderType
 	{
 		DirectX::XMFLOAT3 position;
 		DirectX::XMFLOAT2 texture;
 		DirectX::XMFLOAT3 normal;
 	};
 
+	struct ModelData
+	{
+		float x, y, z;
+		float u, v;
+		float normalX, normalY, normalZ;
+	};
+
 	bool InitializeBuffers(ID3D11Device*);
 	void ReleaseBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
+
+	bool LoadModel(char*);
+	void ReleaseModel();
 
 	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, char*);
 	void ReleaseTexture();
 
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* indexBuffer;
+	ModelData* modelData;
 	int vertexCount;
 	int indexCount;
 
