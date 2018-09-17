@@ -58,7 +58,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "data/textures/stone01.tga");
+	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "data/models/cube.txt","data/textures/stone01.tga");
 	if (!result)
 	{
 		MessageBox(hwnd, "Could not initialize the model object.", "Error", MB_OK);
@@ -73,7 +73,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	light->diffuseColor.x = 1.0f;
 	light->diffuseColor.y = 1.0f;
-	light->diffuseColor.z = 0.0f;
+	light->diffuseColor.z = 1.0f;
 	light->diffuseColor.w = 1.0f;
 	
 	light->lightDirection.x = 0.0f;
@@ -138,7 +138,7 @@ bool Graphics::Frame()
 	static float rotation = 0.0f;
 
 	// Update the rotation variable each frame.
-	rotation += 3.14f * 0.01f;
+	rotation += 3.14f * 0.001f;
 
 	result = Render(rotation);
 	if (!result)
