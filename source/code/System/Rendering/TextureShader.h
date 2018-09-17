@@ -1,22 +1,20 @@
-#ifndef _COLORSHADER_H_
-#define _COLORSHADER_H_
+#ifndef _TEXTURESHADER_H_
+#define _TEXTURESHADER_H_
 
 #include <d3d11.h>
-#include <d3dcompiler.h>
 #include <DirectXMath.h>
-#include <fstream>
 
-class ColorShader
+class TextureShader
 {
 public:
 
-	ColorShader();
-	ColorShader(const ColorShader&);
-	~ColorShader();
+	TextureShader();
+	TextureShader(const TextureShader&);
+	~TextureShader();
 
 	bool Initialize(ID3D11Device*, HWND);
 	void Shutdown();
-	bool Render(ID3D11DeviceContext*, int, DirectX::XMMATRIX, DirectX::XMMATRIX, DirectX::XMMATRIX);
+	bool Render(ID3D11DeviceContext*, int, DirectX::XMMATRIX, DirectX::XMMATRIX, DirectX::XMMATRIX, ID3D11ShaderResourceView*);
 
 private:
 
@@ -32,15 +30,14 @@ private:
 	void CatchShaderErrorMessage(ID3D10Blob*, HWND, WCHAR*);
 	void OutputShaderErrorMessage(ID3D10Blob*, HWND, WCHAR*);
 
-	bool SetShaderParameters(ID3D11DeviceContext*, DirectX::XMMATRIX, DirectX::XMMATRIX, DirectX::XMMATRIX);
+	bool SetShaderParameters(ID3D11DeviceContext*, DirectX::XMMATRIX, DirectX::XMMATRIX, DirectX::XMMATRIX, ID3D11ShaderResourceView*);
 	void RenderShader(ID3D11DeviceContext*, int);
-
-	
 
 	ID3D11VertexShader* vertexShader;
 	ID3D11PixelShader* pixelShader;
 	ID3D11InputLayout* inputLayout;
 	ID3D11Buffer* matrixBuffer;
+	ID3D11SamplerState* samplerState;
 
 };
 

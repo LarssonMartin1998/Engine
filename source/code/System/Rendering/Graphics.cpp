@@ -3,13 +3,13 @@
 #include "D3D.h"
 #include "Camera.h"
 #include "Model.h"
-#include "ColorShader.h"
+#include "TextureShader.h"
 
 Graphics::Graphics()
 : direct3D (nullptr)
 , camera (nullptr)
 , model (nullptr)
-, colorShader (nullptr)
+, textureShader (nullptr)
 {
 
 }
@@ -56,23 +56,23 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	result = model->Initialize(direct3D->GetDevice());
+	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "data/textures/stone01.tga");
 	if (!result)
 	{
 		MessageBox(hwnd, "Could not initialize the model object.", "Error", MB_OK);
 		return false;
 	}
 
-	colorShader = new ColorShader();
-	if (!colorShader)
+	textureShader = new TextureShader();
+	if (!textureShader)
 	{
 		return false;
 	}
 
-	result = colorShader->Initialize(direct3D->GetDevice(), hwnd);
+	result = textureShader->Initialize(direct3D->GetDevice(), hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, "Could not initialize the color shader object.", "Error", MB_OK);
+		MessageBox(hwnd, "Could not initialize the texture shader object.", "Error", MB_OK);
 		return false;
 	}
 
@@ -101,11 +101,11 @@ void Graphics::Shutdown()
 		model = nullptr;
 	}
 
-	if (colorShader)
+	if (textureShader)
 	{
-		colorShader->Shutdown();
-		delete colorShader;
-		colorShader = nullptr;
+		textureShader->Shutdown();
+		delete textureShader;
+		textureShader = nullptr;
 	}
 }
 
@@ -144,7 +144,7 @@ bool Graphics::Render()
 	model->Render(direct3D->GetDeviceContext());
 
 	// Render the model using the color shader.
-	result = colorShader->Render(direct3D->GetDeviceContext(), model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix);
+	result = textureShader->Render(direct3D->GetDeviceContext(), model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, model->GetTexture());
 	if (!result)
 	{
 		return false;

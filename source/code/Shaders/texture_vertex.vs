@@ -8,18 +8,18 @@ cbuffer MatrixBuffer
 struct VertexInput
 {
 	float4 position : POSITION;
-	float4 color : COLOR;
+	float4 tex : TEXCOORD0;
 };
 
 struct PixelInput
 {
 	float4 position : SV_POSITION;
-	float4 color : COLOR;
+	float4 tex : TEXCOORD0;
 };
 
 ////////////////////////////////////////////////////////////////////
 
-PixelInput ColorVertexShader(VertexInput input)
+PixelInput TextureVertexShader(VertexInput input)
 {
 	PixelInput output;
 
@@ -30,6 +30,8 @@ PixelInput ColorVertexShader(VertexInput input)
 	output.position = mul(input.position, worldMatrix);
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projectionMatrix);
+
+	output.tex = input.tex;
 
 	return output;
 }

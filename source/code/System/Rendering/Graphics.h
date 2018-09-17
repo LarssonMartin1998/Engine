@@ -11,7 +11,7 @@ const float SCREEN_NEAR = 0.1f;
 class D3D;
 class Camera;
 class Model;
-class ColorShader;
+class TextureShader;
 
 class Graphics
 {
@@ -33,7 +33,7 @@ private:
 	D3D* direct3D;
 	Camera* camera;
 	Model* model;
-	ColorShader* colorShader;
+	TextureShader* textureShader;
 
 };
 
