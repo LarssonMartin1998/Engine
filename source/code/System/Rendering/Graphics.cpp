@@ -3,13 +3,15 @@
 #include "D3D.h"
 #include "Camera.h"
 #include "Model.h"
-#include "TextureShader.h"
+#include "Light.h"""
+#include "DiffuseShader.h"
 
 Graphics::Graphics()
 : direct3D (nullptr)
 , camera (nullptr)
 , model (nullptr)
-, textureShader (nullptr)
+, light (nullptr)
+, diffuseShader (nullptr)
 {
 
 }
@@ -63,16 +65,31 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	textureShader = new TextureShader();
-	if (!textureShader)
+	light = new Light();
+	if (!light)
 	{
 		return false;
 	}
 
-	result = textureShader->Initialize(direct3D->GetDevice(), hwnd);
+	light->diffuseColor.x = 1.0f;
+	light->diffuseColor.y = 1.0f;
+	light->diffuseColor.z = 0.0f;
+	light->diffuseColor.w = 1.0f;
+	
+	light->lightDirection.x = 0.0f;
+	light->lightDirection.y = 0.0f;
+	light->lightDirection.z = 1.0f;
+
+	diffuseShader = new DiffuseShader();
+	if (!diffuseShader)
+	{
+		return false;
+	}
+
+	result = diffuseShader->Initialize(direct3D->GetDevice(), hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, "Could not initialize the texture shader object.", "Error", MB_OK);
+		MessageBox(hwnd, "Could not initialize the diffuse shader object.", "Error", MB_OK);
 		return false;
 	}
 
@@ -101,19 +118,29 @@ void Graphics::Shutdown()
 		model = nullptr;
 	}
 
-	if (textureShader)
+	if (light)
 	{
-		textureShader->Shutdown();
-		delete textureShader;
-		textureShader = nullptr;
+		delete light;
+		light = nullptr;
+	}
+
+	if (diffuseShader)
+	{
+		diffuseShader->Shutdown();
+		delete diffuseShader;
+		diffuseShader = nullptr;
 	}
 }
 
 bool Graphics::Frame()
 {
 	bool result;
+	static float rotation = 0.0f;
 
-	result = Render();
+	// Update the rotation variable each frame.
+	rotation += 3.14f * 0.01f;
+
+	result = Render(rotation);
 	if (!result)
 	{
 		return false;
@@ -122,7 +149,7 @@ bool Graphics::Frame()
 	return true;
 }
 
-bool Graphics::Render()
+bool Graphics::Render(float rotation)
 {
 	bool result;
 	DirectX::XMMATRIX worldMatrix;
@@ -140,11 +167,13 @@ bool Graphics::Render()
 	camera->GetViewMatrix(viewMatrix);
 	direct3D->GetProjectionMatri(projectionMatrix);
 
+	worldMatrix *= DirectX::XMMatrixRotationY(rotation);
+
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	model->Render(direct3D->GetDeviceContext());
 
-	// Render the model using the color shader.
-	result = textureShader->Render(direct3D->GetDeviceContext(), model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, model->GetTexture());
+	// Render the model using the diffuse shader.
+	result = diffuseShader->Render(direct3D->GetDeviceContext(), model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, model->GetTexture(), light->lightDirection, light->diffuseColor);
 	if (!result)
 	{
 		return false;

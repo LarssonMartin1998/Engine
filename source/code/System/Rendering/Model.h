@@ -1,3 +1,4 @@
+
 #ifndef _MODEL_H_
 #define _MODEL_H_
 
@@ -34,6 +35,7 @@ private:
 	{
 		DirectX::XMFLOAT3 position;
 		DirectX::XMFLOAT2 texture;
+		DirectX::XMFLOAT3 normal;
 	};
 
 	bool InitializeBuffers(ID3D11Device*);

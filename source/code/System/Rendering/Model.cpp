@@ -67,8 +67,8 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	D3D11_SUBRESOURCE_DATA indexData;
 
 	// Fake creating a triangle.
-	vertexCount = 6;
-	indexCount = 6;
+	vertexCount = 3;
+	indexCount = 3;
 
 	// Create the vertex array.
 	vertices = new VertexType[vertexCount];
@@ -87,32 +87,21 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	// Load the vertex array with data.
 	vertices[0].position = DirectX::XMFLOAT3(-1.0f, -1.0f, 0.0f);  // Bottom left.
 	vertices[0].texture = DirectX::XMFLOAT2(0.0f, 1.0f);
+	vertices[0].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
 
-	vertices[1].position = DirectX::XMFLOAT3(-1.0f, 1.0f, 0.0f);  // Top left.
-	vertices[1].texture = DirectX::XMFLOAT2(0.0f, 0.0f);
+	vertices[1].position = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);  // Top middle.
+	vertices[1].texture = DirectX::XMFLOAT2(0.5f, 0.0f);
+	vertices[0].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
 
 	vertices[2].position = DirectX::XMFLOAT3(1.0f, -1.0f, 0.0f);  // Bottom right.
 	vertices[2].texture = DirectX::XMFLOAT2(1.0f, 1.0f);
-
-	vertices[3].position = DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f);  // Top right.
-	vertices[3].texture = DirectX::XMFLOAT2(1.0f, 0.0f);
-
-	vertices[4].position = DirectX::XMFLOAT3(1.0f, -1.0f, 0.0f);  // Bottom right.
-	vertices[4].texture = DirectX::XMFLOAT2(1.0f, 1.0f);
-
-	vertices[5].position = DirectX::XMFLOAT3(-1.0f, 1.0f, 0.0f);  // Top left.
-	vertices[5].texture = DirectX::XMFLOAT2(0.0f, 0.0f);
+	vertices[0].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
 
 
 	// Load the index array with data.
 	indices[0] = 0; // Bottom left.
-	indices[1] = 1; // Top left.
+	indices[1] = 1; // Top middle.
 	indices[2] = 2; // Bottom right.
-	indices[3] = 0; // Top right.
-	indices[4] = 1; // Bottom right.
-	indices[5] = 2; // Top left.
-
-
 
 	// Set up the description of the static vertex buffer.
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
