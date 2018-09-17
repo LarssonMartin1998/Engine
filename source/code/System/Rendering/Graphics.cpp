@@ -50,7 +50,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 0.0f, -5.0f);
+	camera->SetPosition(0.0f, 2.5f, -5.0f);
+	camera->SetRotation(30.0f, 0.0f, 0.0f);
 
 	model = new Model();
 	if (!model)
@@ -77,7 +78,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	light->diffuseColor.w = 1.0f;
 	
 	light->lightDirection.x = 0.0f;
-	light->lightDirection.y = 0.0f;
+	light->lightDirection.y = -1.0f;
 	light->lightDirection.z = 1.0f;
 
 	diffuseShader = new DiffuseShader();
