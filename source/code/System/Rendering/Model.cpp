@@ -89,37 +89,18 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 		return false;
 	}
 
-	//// Load the vertex array and index array with data.
-	//for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
-	//{
-	//	ModelData& mdl = modelData[vertexIndex];
-	//	VertexShaderType& vertex = vertices[vertexIndex];
+	// Load the vertex array and index array with data.
+	for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
+	{
+		ModelData& mdl = modelData[vertexIndex];
+		VertexShaderType& vertex = vertices[vertexIndex];
 
-	//	vertex.position = DirectX::XMFLOAT3(mdl.x, mdl.y, mdl.z);
-	//	vertex.normal = DirectX::XMFLOAT3(mdl.normalX, mdl.normalY, mdl.normalZ);
-	//	vertex.texture = DirectX::XMFLOAT2(mdl.u, mdl.v);
+		vertex.position = DirectX::XMFLOAT3(mdl.x, mdl.y, mdl.z);
+		vertex.normal = DirectX::XMFLOAT3(mdl.normalX, mdl.normalY, mdl.normalZ);
+		vertex.texture = DirectX::XMFLOAT2(mdl.u, mdl.v);
 
-	//	indices[vertexIndex] = vertexIndex;
-	//}
-
-	vertexCount = 3;
-	indexCount = 3;
-
-	vertices[0].position = DirectX::XMFLOAT3(-1.0f, 1.0f, 0.0f);
-	vertices[0].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
-	vertices[0].texture = DirectX::XMFLOAT2(0.0f, 1.0f);
-
-	vertices[1].position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
-	vertices[1].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
-	vertices[1].texture = DirectX::XMFLOAT2(0.5f, 0.0f);
-
-	vertices[2].position = DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f);
-	vertices[2].normal = DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f);
-	vertices[2].texture = DirectX::XMFLOAT2(1.0f, 1.0f);
-
-	indices[0] = 0;
-	indices[1] = 1;
-	indices[2] = 2;
+		indices[vertexIndex] = vertexIndex;
+	}
 
 	// Set up the description of the static vertex buffer.
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;

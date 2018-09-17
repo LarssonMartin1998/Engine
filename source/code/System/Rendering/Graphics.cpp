@@ -58,7 +58,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "data/models/cube.txt","data/textures/stone01.tga");
+	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "data/models/cube.txt", "data/textures/stone01.tga");
 	if (!result)
 	{
 		MessageBox(hwnd, "Could not initialize the model object.", "Error", MB_OK);
