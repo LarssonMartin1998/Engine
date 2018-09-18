@@ -37,8 +37,11 @@ project(PRODUCT_NAME)
 	warnings "Extra"
 	editandcontinue "Off"
 
-	-- Include third-party libraries for this project.
+	-- Include any modules for the main project.
 	modules.links "System"
+
+	-- Include third-party libraries for this project.
+	
 
 	-- Global per-configuration settings.
 
