@@ -18,18 +18,17 @@ solution(PRODUCT_NAME)
 group "Modules"
 
 -- Add any modules under the group "Modules", add dependencies directly below a module. Remember to also add the modules to the main project below if it's necessary.
--- modules.module "DirectX11"
 modules.module "System"
 
 group "Executables"
 
 project(PRODUCT_NAME)
 	location "../../build/%{prj.name}"
+	symbolspath "../../build/DebugSymbols/%{prj.name}/%{cfg.platform}_%{cfg.buildcfg}.pdb"
 	kind "WindowedApp"
 	language "C++"
 	characterset "MBCS"
 	files { "../../source/code/main.cpp" }
-
 	targetdir "../../game/"
 	targetname "%{prj.name}_%{cfg.platform}_%{cfg.buildcfg}"
 	debugdir "../../game/"
@@ -45,48 +44,58 @@ project(PRODUCT_NAME)
 
 	-- Global per-configuration settings.
 
-	configuration { "Debug" }
+	filter { "Debug" }
+
 		defines {
 			"DEBUG",
 			"NFINAL"
 		}
+
 		symbols "On"
 
-	configuration { "Release" }
+	filter { "Release" }
+
 		defines {
 			"NDEBUG",
 			"RELEASE",
 			"NFINAL"
 		}
+
 		symbols "On"
 		optimize "Speed"
 
-	configuration { "Final" }
+	filter { "Final" }
+
 		defines {
 			"NDEBUG",
 			"FINAL",
 		}
+
 		symbols "Off"
 		optimize "Speed"
 
 	-- Win32
 
-	configuration { "Win32" }
+	filter { "Win32" }
+
 		defines {
 			"WIN32",
 			"_WINDOWS",
 		}
+
 		flags {
 			"NoMinimalRebuild",
 		}
 		
 		vectorextensions "SSE2"
 
-	configuration { "Win32", "not Debug" }
+	filter { "Win32", "not Debug" }
+
 		buildoptions {
 			-- Whole program optimization
 			"/GL"
 		}
+
 		linkoptions {
 			-- Link-time code generation
 			"/LTCG"
@@ -94,7 +103,8 @@ project(PRODUCT_NAME)
 
 	-- x64
 
-	configuration { "x64" }
+	filter { "x64" }
+
 		defines {
 			"WIN64",
 			"_WINDOWS",
@@ -104,11 +114,13 @@ project(PRODUCT_NAME)
 			"NoMinimalRebuild",
 		}
 
-	configuration { "x64", "not Debug" }
+	filter { "x64", "not Debug" }
+
 		buildoptions {
 			-- Whole program optimization
 			"/GL"
 		}
+
 		linkoptions {
 			-- Link-time code generation
 			"/LTCG"
