@@ -13,7 +13,7 @@ filter { "Win32", "Debug" }
 	}
 
 	links {
-		"../../../game/libfbxsdk_x86_debug.dll"
+		"../../../game/dll/fbx/x86/debug/libfbxsdk.dll"
 	}
 
 filter { "Win32", "not Debug" }
@@ -23,7 +23,7 @@ filter { "Win32", "not Debug" }
 	}
 
 	links {
-		"../../../game/libfbxsdk_x86_release.dll"
+		"../../../game/dll/fbx/x86/release/libfbxsdk.dll"
 	}
 
 filter { "x64", "Debug" }
@@ -33,7 +33,7 @@ filter { "x64", "Debug" }
 	}
 
 	links {
-		"../../../game/libfbxsdk_x64_debug.dll"
+		"../../../game/dll/fbx/x64/debug/libfbxsdk.dll"
 	}
 
 filter { "x64", "not Debug" }
@@ -43,5 +43,5 @@ filter { "x64", "not Debug" }
 	}
 	
 	links {
-		"../../../game/libfbxsdk_x64_release.dll"
+		"../../../game/dll/fbx/x64/release/libfbxsdk.dll"
 	}
