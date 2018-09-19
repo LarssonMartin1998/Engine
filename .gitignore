@@ -333,7 +333,8 @@ ASALocalRun/
 *build/
 
 # the actual game executables.
-/game/*.exe
+/Binaries/x86/*.exe
+/Binaries/x64/*.exe
 
 # VS solution files
 *.sln
