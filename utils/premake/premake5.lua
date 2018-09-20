@@ -3,7 +3,7 @@ require "settings"
 local modules = require "modules"
 
 solution(PRODUCT_NAME)
-	location "../../source/"
+	location "../../Source/"
 	startproject(PRODUCT_NAME)
 	platforms {
 		"Win32",
@@ -23,15 +23,13 @@ modules.module "System"
 group "Executables"
 
 project(PRODUCT_NAME)
-	location "../../build/%{prj.name}"
-	symbolspath "../../build/DebugSymbols/%{prj.name}/%{cfg.platform}_%{cfg.buildcfg}.pdb"
+	location "../../Build/%{prj.name}"
+	symbolspath "../../Build/DebugSymbols/%{prj.name}/%{cfg.platform}_%{cfg.buildcfg}.pdb"
 	kind "WindowedApp"
 	language "C++"
 	characterset "MBCS"
-	files { "../../source/code/main.cpp" }
-	targetdir "../../game/"
+	files { "../../Source/Code/main.cpp" }
 	targetname "%{prj.name}_%{cfg.platform}_%{cfg.buildcfg}"
-	debugdir "../../game/"
 	
 	warnings "Extra"
 	editandcontinue "Off"
@@ -40,11 +38,11 @@ project(PRODUCT_NAME)
 	modules.links "System"
 
 	-- Include third-party libraries for this project.
-	
+	-- dofile(libraries/thirpartylibrary.lua)
 
 	-- Global per-configuration settings.
 
-	filter { "Debug" }
+	configuration { "Debug" }
 
 		defines {
 			"DEBUG",
@@ -52,8 +50,9 @@ project(PRODUCT_NAME)
 		}
 
 		symbols "On"
+		optimize "Debug"
 
-	filter { "Release" }
+	configuration { "Release" }
 
 		defines {
 			"NDEBUG",
@@ -64,7 +63,7 @@ project(PRODUCT_NAME)
 		symbols "On"
 		optimize "Speed"
 
-	filter { "Final" }
+	configuration { "Final" }
 
 		defines {
 			"NDEBUG",
@@ -76,7 +75,7 @@ project(PRODUCT_NAME)
 
 	-- Win32
 
-	filter { "Win32" }
+	configuration { "Win32" }
 
 		defines {
 			"WIN32",
@@ -89,7 +88,7 @@ project(PRODUCT_NAME)
 		
 		vectorextensions "SSE2"
 
-	filter { "Win32", "not Debug" }
+	configuration { "Win32", "not Debug" }
 
 		buildoptions {
 			-- Whole program optimization
@@ -101,9 +100,22 @@ project(PRODUCT_NAME)
 			"/LTCG"
 		}
 
+	configuration { "Win32", "Debug" }
+
+		targetdir "../../Binaries/x86/Debug/"
+		targetdir "../../Binaries/x86/Debug/"
+
+	configuration { "Win32", "Release" }
+
+		targetdir "../../Binaries/x86/Release/"
+
+	configuration { "Win32", "Final" }
+
+		targetdir "../../Binaries/x86/Final/"
+
 	-- x64
 
-	filter { "x64" }
+	configuration { "x64" }
 
 		defines {
 			"WIN64",
@@ -114,7 +126,7 @@ project(PRODUCT_NAME)
 			"NoMinimalRebuild",
 		}
 
-	filter { "x64", "not Debug" }
+	configuration { "x64", "not Debug" }
 
 		buildoptions {
 			-- Whole program optimization
@@ -125,3 +137,16 @@ project(PRODUCT_NAME)
 			-- Link-time code generation
 			"/LTCG"
 		}
+
+	configuration { "x64", "Debug" }
+
+		targetdir "../../Binaries/x64/Debug/"
+		targetdir "../../Binaries/x64/Debug/"
+
+	configuration { "x64", "Release" }
+
+		targetdir "../../Binaries/x64/Release/"
+
+	configuration { "x64", "Final" }
+
+		targetdir "../../Binaries/x64/Final/"

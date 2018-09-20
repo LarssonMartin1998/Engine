@@ -4,14 +4,14 @@ local m = {}
 -- Normalizes a module name to its directory name.
 
 function get_module_directory(name)
-	return "../../source/code/" .. string.lower(name)
+	return "../../Source/Code/" .. string.lower(name)
 end
 
 -- Declares a module to be built.
 
 function m.module(name)
 	project(name)
-	location "../../build/%{prj.name}"
+	location "../../Build/%{prj.name}"
 	kind "StaticLib"
 	language "C++"
 	characterset "MBCS"
@@ -60,12 +60,12 @@ function m.module(name)
 	local module_file = './' .. source_dir .. '/module.lua'
 	if os.isfile(module_file) then
 		-- Reset the filter to give the module file a clean slate.
-		filter {}
+		configuration {}
 		dofile(module_file)
 	end
 
 	-- Reset the filter to leave behind a blank slate, too.
-	filter {}
+	configuration {}
 end
 
 -- Declares a header-only dependency on a module.
