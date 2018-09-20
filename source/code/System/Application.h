@@ -5,29 +5,39 @@
 
 #include <windows.h>
 
-class Application;
+#ifdef DEBUG
+#include <assert.h>
+#endif
+
 class Input;
 class Graphics;
+class FbxHelper;
 
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-
-static Application* applicationHandle = nullptr;
 
 class Application
 {
 public:
 
-	Application();
-	Application(const Application&);
-	~Application();
+	static Application* GetInstance();
+	static bool InitializeSingleton();
+	static void ReleaseSingleton();
 
-	bool Initialize();
+	bool InitializeEngine();
+	void ShutdownEngine();
 	void Run();
-	void Shutdown();
+
+	FbxHelper* GetFbxHelper() { return fbxHelper; }
 
 	LRESULT CALLBACK MessageHandler(HWND, UINT, WPARAM, LPARAM);
 
 private:
+
+	static Application* instance;
+
+	Application();
+	Application(const Application&);
+	~Application();
 
 	void InitializeWindows(int&, int&);
 	void ShutdownWindows();
@@ -37,8 +47,11 @@ private:
 	HINSTANCE hinstance;
 	HWND hwnd;
 
+	FbxHelper* fbxHelper;
 	Graphics* graphics;
 	Input* input;
 };
+
+static Application* applicationHandle = nullptr;
 
 #endif

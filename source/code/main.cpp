@@ -4,23 +4,24 @@
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
-	Application* app = new Application();
 	bool result;
+
+	Application::InitializeSingleton();
+	Application* app = Application::GetInstance();
 
 	if (!app)
 	{
 		return 0;
 	}
 
-	result = app->Initialize();
+	result = app->InitializeEngine();
 	if (result)
 	{
 		app->Run();
 	}
 
-	app->Shutdown();
-	delete app;
-	app = nullptr;
+	app->ShutdownEngine();
+	app->ReleaseSingleton();
 
 	return 0;
 }

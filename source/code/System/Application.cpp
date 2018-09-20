@@ -2,10 +2,14 @@
 
 #include "Input.h"
 #include "Rendering/Graphics.h"
+#include "Fbx/FbxHelper.h"
+
+Application* Application::instance = nullptr;
 
 Application::Application()
 : graphics (nullptr)
 , input (nullptr)
+, fbxHelper (nullptr)
 {
 
 }
@@ -48,7 +52,34 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam
 	}
 }
 
-bool Application::Initialize()
+Application* Application::GetInstance()
+{
+	assert(instance != nullptr);
+
+	return instance;
+}
+
+bool Application::InitializeSingleton()
+{
+	if (instance)
+	{
+		return false;
+	}
+
+	instance = new Application;
+	return true;
+}
+
+void Application::ReleaseSingleton()
+{
+	if (instance)
+	{
+		delete instance;
+		instance = nullptr;
+	}
+}
+
+bool Application::InitializeEngine()
 {
 	int screenWidth = 0;
 	int screenHeight = 0;
@@ -75,6 +106,18 @@ bool Application::Initialize()
 	}
 
 	result = graphics->Initialize(screenWidth, screenHeight, hwnd);
+	if (!result)
+	{
+		return false;
+	}
+
+	fbxHelper = new FbxHelper();
+	if (!fbxHelper)
+	{
+		return false;
+	}
+
+	result = fbxHelper->Initialize();
 	if (!result)
 	{
 		return false;
@@ -120,7 +163,7 @@ void Application::Run()
 	}
 }
 
-void Application::Shutdown()
+void Application::ShutdownEngine()
 {
 	if (input)
 	{
