@@ -3,7 +3,10 @@
 #include <fstream>
 #include <d3d11.h>
 
+#include "fbxsdk.h"
 #include "Texture.h"
+#include "Application.h"
+#include "Fbx/FbxHelper.h"
 
 
 Model::Model()
@@ -12,7 +15,7 @@ Model::Model()
 , modelData(nullptr)
 , texture (nullptr)
 {
-
+	
 }
 
 Model::Model(const Model& model)
@@ -29,11 +32,11 @@ bool Model::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
 {
 	bool result;
 
-	result = LoadModel(modelFilename);
-	if (!result)
-	{
-		return false;
-	}
+	//result = LoadModel(modelFilename);
+	//if (!result)
+	//{
+	//	return false;
+	//}
 
 	result = InitializeBuffers(device);
 	if (!result)
@@ -228,70 +231,147 @@ void Model::ReleaseTexture()
 }
 
 
-bool Model::LoadModel(char* filename)
+bool Model::LoadFbx(char* filename)
 {
-	std::ifstream fin;
-	char input;
+	bool result;
+	FbxImporter* importer;
+	FbxScene* fbxScene;
+	FbxNode* fbxRootNode;
+	int polygonCount;
+	int vertexCounter;
 
-	// Open the model file.
-	fin.open(filename);
+	FbxManager* fbxManager = Application::GetInstance()->GetFbxHelper()->GetFbxManager();
 
-	// If it could not open the file then exit.
-	if (fin.fail())
+	fbxScene = FbxScene::Create(fbxManager, "");
+
+	result = importer->Import(fbxScene);
+	if (!result)
 	{
 		return false;
 	}
 
-	// Read up to the value of vertex count.
-	fin.get(input);
-	while (input != ':')
+	importer->Destroy();
+
+	fbxRootNode = fbxScene->GetRootNode();
+
+	if (fbxRootNode)
 	{
-		fin.get(input);
+		for (int i = 0; i < fbxRootNode->GetChildCount(); i++)
+		{
+			FbxNode* fbxChildNode = fbxRootNode->GetChild(i);
+			FbxNodeAttribute::EType attributeType;
+			FbxMesh* mesh;
+			FbxVector4* vertices;
+
+			if (fbxChildNode->GetNodeAttribute() == NULL)
+			{
+				continue;
+			}
+				
+
+			attributeType = fbxChildNode->GetNodeAttribute()->GetAttributeType();
+
+			if (attributeType != FbxNodeAttribute::eMesh)
+			{
+				continue;
+			}
+
+			mesh = (FbxMesh*)fbxChildNode->GetNodeAttribute();
+
+			vertices = mesh->GetControlPoints();
+
+			polygonCount = mesh->GetPolygonCount();
+			vertexCount = polygonCount * 3;
+			indexCount = vertexCount;
+			modelData = new ModelData[vertexCount];
+
+			vertexCounter = 0;
+			for (int polygonIndex = 0; polygonIndex < polygonCount; ++polygonIndex)
+			{
+				int numVertices = mesh->GetPolygonSize(polygonIndex);
+				assert(numVertices == 3);
+
+				for (int vertexIndex = 0; vertexIndex < numVertices; ++vertexIndex)
+				{
+					int controlPointIndex = mesh->GetPolygonVertex(polygonIndex, vertexIndex);
+
+					modelData[vertexCounter].x = (float)vertices[controlPointIndex].mData[0];
+					modelData[vertexCounter].y = (float)vertices[controlPointIndex].mData[0];
+					modelData[vertexCounter].z = (float)vertices[controlPointIndex].mData[0];
+
+					vertexCounter++;
+				}
+			}
+
+		}
 	}
-
-	// Read in the vertex count.
-	fin >> vertexCount;
-
-	// Set the number of indices to be the same as the vertex count.
-	indexCount = vertexCount;
-
-	// Create the model using the vertex count that was read in.
-	modelData = new ModelData[vertexCount];
-	if (!modelData)
-	{
-		return false;
-	}
-
-	// Read up to the beginning of the data.
-	fin.get(input);
-	while (input != ':')
-	{
-		fin.get(input);
-	}
-	fin.get(input);
-	fin.get(input);
-
-	// Read in the vertex data.
-	for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
-	{
-		ModelData& md = modelData[vertexIndex];
-
-		fin >> md.x >> md.y >> md.z;
-		fin >> md.u >> md.v;
-		fin >> md.normalX >> md.normalY >> md.normalZ;
-	}
-
-	// Close the model file.
-	fin.close();
 
 	return true;
 }
+
+//bool Model::LoadModel(char* filename)
+//{
+//	std::ifstream fin;
+//	char input;
+//
+//	// Open the model file.
+//	fin.open(filename);
+//
+//	// If it could not open the file then exit.
+//	if (fin.fail())
+//	{
+//		return false;
+//	}
+//
+//	// Read up to the value of vertex count.
+//	fin.get(input);
+//	while (input != ':')
+//	{
+//		fin.get(input);
+//	}
+//
+//	// Read in the vertex count.
+//	fin >> vertexCount;
+//
+//	// Set the number of indices to be the same as the vertex count.
+//	indexCount = vertexCount;
+//
+//	// Create the model using the vertex count that was read in.
+//	modelData = new ModelData[vertexCount];
+//	if (!modelData)
+//	{
+//		return false;
+//	}
+//
+//	// Read up to the beginning of the data.
+//	fin.get(input);
+//	while (input != ':')
+//	{
+//		fin.get(input);
+//	}
+//	fin.get(input);
+//	fin.get(input);
+//
+//	// Read in the vertex data.
+//	for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
+//	{
+//		ModelData& md = modelData[vertexIndex];
+//
+//		fin >> md.x >> md.y >> md.z;
+//		fin >> md.u >> md.v;
+//		fin >> md.normalX >> md.normalY >> md.normalZ;
+//	}
+//
+//	// Close the model file.
+//	fin.close();
+//
+//	return true;
+//}
 
 ID3D11ShaderResourceView* Model::GetTexture()
 {
 	return texture->GetTexture();
 }
-
 
 void Model::ReleaseModel()
 {

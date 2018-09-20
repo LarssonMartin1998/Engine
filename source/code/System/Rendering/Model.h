@@ -8,7 +8,6 @@ class ID3D11Device;
 class ID3D11DeviceContext;
 class ID3D11Buffer;
 class ID3D11ShaderResourceView;
-
 class Texture;
 
 class Model
@@ -27,7 +26,6 @@ public:
 	int GetVertexCount() { return vertexCount; }
 
 	ID3D11ShaderResourceView* GetTexture();
-
 
 private:
 
@@ -49,7 +47,7 @@ private:
 	void ReleaseBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
 
-	bool LoadModel(char*);
+	bool LoadFbx(char*);
 	void ReleaseModel();
 
 	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, char*);
