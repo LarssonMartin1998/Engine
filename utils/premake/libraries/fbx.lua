@@ -1,4 +1,4 @@
-configuration {}
+filter {}
 	includedirs {
 		"../../../Thirdparty/FBX/Include/"
 	}
@@ -6,25 +6,25 @@ configuration {}
 		"libfbxsdk"
 	}
 
-configuration { "Win32", "Debug" }
+filter { "platforms:x86", "configurations:Debug" }
 
 	libdirs {
 		"../../../Thirdparty/FBX/Lib/x86/Debug/"
 	}
 
-configuration { "Win32", "not Debug" }
+filter { "platforms:x86", "configurations:not Debug" }
 
 	libdirs {
 		"../../../Thirdparty/FBX/Lib/x86/Release/"
 	}
 
-configuration { "x64", "Debug" }
+filter { "platforms:x64", "configurations:Debug" }
 
 	libdirs {
 		"../../../Thirdparty/FBX/Lib/x64/Debug/"
 	}
 
-configuration { "x64", "not Debug" }
+filter { "platforms:x64", "configurations:not Debug" }
 
 	libdirs {
 		"../../../Thirdparty/FBX/Lib/x64/Release/"

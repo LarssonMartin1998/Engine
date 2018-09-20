@@ -23,7 +23,7 @@ function m.module(name)
 		source_dir .. "/**.h",
 	}
 
-	configuration {}
+	filter {}
 
 	flags "NoMinimalRebuild"
 	editandcontinue  "Off"
@@ -33,14 +33,14 @@ function m.module(name)
 		"./" .. source_dir .. "/"
 	}
 
-	configuration { "Debug" }
+	filter { "configurations:Debug" }
 		defines {
 			"DEBUG",
 			"NFINAL"
 		}
 		symbols "On"
 
-	configuration { "Release" }
+	filter { "configurations:Release" }
 		defines {
 			"NDEBUG",
 			"RELEASE",
@@ -49,7 +49,7 @@ function m.module(name)
 		symbols "On"
 		optimize "Speed"
 
-	configuration { "Final" }
+	filter { "configurations:Final" }
 		defines {
 			"NDEBUG",
 			"FINAL"
@@ -60,12 +60,12 @@ function m.module(name)
 	local module_file = './' .. source_dir .. '/module.lua'
 	if os.isfile(module_file) then
 		-- Reset the filter to give the module file a clean slate.
-		configuration {}
+		filter {}
 		dofile(module_file)
 	end
 
 	-- Reset the filter to leave behind a blank slate, too.
-	configuration {}
+	filter {}
 end
 
 -- Declares a header-only dependency on a module.

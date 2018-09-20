@@ -6,8 +6,8 @@ solution(PRODUCT_NAME)
 	location "../../Source/"
 	startproject(PRODUCT_NAME)
 	platforms {
-		"Win32",
-		"x64",
+		"x86",
+		"x64"
 	}
 	configurations {
 		"Debug",
@@ -42,7 +42,7 @@ project(PRODUCT_NAME)
 
 	-- Global per-configuration settings.
 
-	configuration { "Debug" }
+	filter { "configurations:Debug" }
 
 		defines {
 			"DEBUG",
@@ -52,7 +52,7 @@ project(PRODUCT_NAME)
 		symbols "On"
 		optimize "Debug"
 
-	configuration { "Release" }
+	filter { "configurations:Release" }
 
 		defines {
 			"NDEBUG",
@@ -63,7 +63,7 @@ project(PRODUCT_NAME)
 		symbols "On"
 		optimize "Speed"
 
-	configuration { "Final" }
+	filter { "configurations:Final" }
 
 		defines {
 			"NDEBUG",
@@ -73,9 +73,9 @@ project(PRODUCT_NAME)
 		symbols "Off"
 		optimize "Speed"
 
-	-- Win32
+	-- x86
 
-	configuration { "Win32" }
+	filter { "platforms:x86" }
 
 		defines {
 			"WIN32",
@@ -88,7 +88,7 @@ project(PRODUCT_NAME)
 		
 		vectorextensions "SSE2"
 
-	configuration { "Win32", "not Debug" }
+	filter { "platforms:x86", "configurations:not Debug" }
 
 		buildoptions {
 			-- Whole program optimization
@@ -100,22 +100,22 @@ project(PRODUCT_NAME)
 			"/LTCG"
 		}
 
-	configuration { "Win32", "Debug" }
+	filter { "platforms:x86", "configurations:Debug" }
 
 		targetdir "../../Binaries/x86/Debug/"
 		targetdir "../../Binaries/x86/Debug/"
 
-	configuration { "Win32", "Release" }
+	filter { "platforms:x86", "configurations:Release" }
 
 		targetdir "../../Binaries/x86/Release/"
 
-	configuration { "Win32", "Final" }
+	filter { "platforms:x86", "configurations:Final" }
 
 		targetdir "../../Binaries/x86/Final/"
 
 	-- x64
 
-	configuration { "x64" }
+	filter { "platforms:x64" }
 
 		defines {
 			"WIN64",
@@ -126,7 +126,7 @@ project(PRODUCT_NAME)
 			"NoMinimalRebuild",
 		}
 
-	configuration { "x64", "not Debug" }
+	filter { "platforms:x64", "configurations:not Debug" }
 
 		buildoptions {
 			-- Whole program optimization
@@ -138,15 +138,15 @@ project(PRODUCT_NAME)
 			"/LTCG"
 		}
 
-	configuration { "x64", "Debug" }
+	filter { "platforms:x64", "configurations:Debug" }
 
 		targetdir "../../Binaries/x64/Debug/"
 		targetdir "../../Binaries/x64/Debug/"
 
-	configuration { "x64", "Release" }
+	filter { "platforms:x64", "configurations:Release" }
 
 		targetdir "../../Binaries/x64/Release/"
 
-	configuration { "x64", "Final" }
+	filter { "platforms:x64", "configurations:Final" }
 
 		targetdir "../../Binaries/x64/Final/"
