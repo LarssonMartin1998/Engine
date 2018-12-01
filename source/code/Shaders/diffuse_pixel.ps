@@ -17,20 +17,18 @@ struct PixelInput
 
 float4 DiffusePixelShader(PixelInput input) : SV_TARGET
 {
-	float4 textureColor;
-	float lightIntensity;
-	float4 color;
-
-	textureColor = shaderTexture.Sample(sampleType, input.tex);
+	float4 textureColor = shaderTexture.Sample(sampleType, input.tex);
 
 	// Calculate the amount of light on this pixel, saturate clamps the dot value between 0 and 1.
-	lightIntensity = saturate(dot(input.normal, -lightDirection));
+	float lightIntensity = saturate(dot(float4(input.normal, 1.0), -lightDirection));
+	float ambientLightIntensity = 0.05;
 
 	// Determine how much the pixel with be lightened up by the light color.
-	color = saturate(diffuseColor * lightIntensity);
+	float4 directionalColor = saturate(diffuseColor * lightIntensity);
+	float4 ambientColor = saturate(diffuseColor * ambientLightIntensity);
 
 	// Multiply the texture pixel and the final diffuse color to get the final pixel color result.
-	color = color * textureColor;
+	float4 finalColor = saturate(ambientColor + directionalColor) * textureColor;
 
-	return color;
+	return finalColor;
 }
