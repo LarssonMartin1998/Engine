@@ -3,7 +3,7 @@
 #include "D3D.h"
 #include "Camera.h"
 #include "Model.h"
-#include "Light.h"""
+#include "Light.h"
 #include "DiffuseShader.h"
 
 Graphics::Graphics()
@@ -39,7 +39,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	result = direct3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 	if (!result)
 	{
-		MessageBox(hwnd, "Could not initalize Direct3D", "Error", MB_OK);
+		MessageBox(hwnd, "Could t initalize Direct3D", "Error", MB_OK);
 		return false;
 	}
 
@@ -50,7 +50,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 2.5f, -5.0f);
+	camera->SetPosition(0.0f, 4.5f, -7.5f);
 	camera->SetRotation(30.0f, 0.0f, 0.0f);
 
 	model = new Model();
@@ -58,8 +58,11 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	{
 		return false;
 	}
-
-	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "data/models/cube.txt", "data/textures/stone01.tga");
+	
+	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "../../data/models/cone.fbx", "../../data/textures/stone01.tga");
+	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "../../data/models/test.fbx", "../../data/textures/stone01.tga");
+	/*result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "../../data/models/suzanne.fbx", "../../data/textures/stone01.tga");*/
+	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "../../data/models/cube.txt", "../../data/textures/stone01.tga");
 	if (!result)
 	{
 		MessageBox(hwnd, "Could not initialize the model object.", "Error", MB_OK);
@@ -77,8 +80,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	light->diffuseColor.z = 1.0f;
 	light->diffuseColor.w = 1.0f;
 	
-	light->lightDirection.x = 0.0f;
-	light->lightDirection.y = -1.0f;
+	light->lightDirection.x = 0.25f;
+	light->lightDirection.y = -0.7f;
 	light->lightDirection.z = 1.0f;
 
 	diffuseShader = new DiffuseShader();

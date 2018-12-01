@@ -14,7 +14,7 @@ Application::Application()
 
 }
 
-Application::Application(const Application& application)
+Application::Application(const Application& /*application*/)
 {
 
 }
@@ -24,7 +24,7 @@ Application::~Application()
 
 }
 
-LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam , LPARAM lparam)
+LRESULT CALLBACK Application::MessageHandler(HWND hwndArg, UINT umsg, WPARAM wparam , LPARAM lparam)
 {
 	switch (umsg)
 	{
@@ -47,7 +47,7 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam
 		// Any other messages send to the default message handler as our application won't make use of them.
 		default:
 		{
-			return DefWindowProc(hwnd, umsg, wparam, lparam);
+			return DefWindowProc(hwndArg, umsg, wparam, lparam);
 		}
 	}
 }
@@ -87,6 +87,18 @@ bool Application::InitializeEngine()
 
 	InitializeWindows(screenWidth, screenHeight);
 
+	fbxHelper = new FbxHelper();
+	if (!fbxHelper)
+	{
+		return false;
+	}
+
+	result = fbxHelper->Initialize();
+	if (!result)
+	{
+		return false;
+	}
+
 	input = new Input();
 	if (!input)
 	{
@@ -106,18 +118,6 @@ bool Application::InitializeEngine()
 	}
 
 	result = graphics->Initialize(screenWidth, screenHeight, hwnd);
-	if (!result)
-	{
-		return false;
-	}
-
-	fbxHelper = new FbxHelper();
-	if (!fbxHelper)
-	{
-		return false;
-	}
-
-	result = fbxHelper->Initialize();
 	if (!result)
 	{
 		return false;

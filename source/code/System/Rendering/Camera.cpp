@@ -12,7 +12,7 @@ Camera::Camera()
 
 }
 
-Camera::Camera(const Camera& camera)
+Camera::Camera(const Camera& /*camera*/)
 {
 
 }

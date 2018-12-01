@@ -11,7 +11,7 @@ Texture::Texture()
 
 }
 
-Texture::Texture(const Texture& texture)
+Texture::Texture(const Texture& /*texture*/)
 {
 
 }
@@ -66,7 +66,7 @@ bool Texture::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContex
 	srvDesc.Format = textureDesc.Format;
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MostDetailedMip = 0;
-	srvDesc.Texture2D.MipLevels = -1;
+	srvDesc.Texture2D.MipLevels = static_cast<unsigned>(-1);
 
 	// Create the shade resource view for the texture.
 	hResult = device->CreateShaderResourceView(texture, &srvDesc, &textureView);
@@ -126,7 +126,7 @@ bool Texture::LoadTarga(char* filename, int& width, int& height)
 
 	// Read in the file header.
 	count = (unsigned)fread(&targaFileHeader, sizeof(TargaHeader), 1, filePtr);
-	if (count != 1)
+	if (count != (unsigned)1)
 	{
 		return false;
 	}
@@ -154,7 +154,7 @@ bool Texture::LoadTarga(char* filename, int& width, int& height)
 
 	// Read in the targa image data.
 	count = (unsigned)fread(targaImage, 1, imageSize, filePtr);
-	if (count != imageSize)
+	if (count != (unsigned)imageSize)
 	{
 		return false;
 	}

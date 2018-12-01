@@ -14,7 +14,7 @@ DiffuseShader::DiffuseShader()
 
 }
 
-DiffuseShader::DiffuseShader(const DiffuseShader& DiffuseShader)
+DiffuseShader::DiffuseShader(const DiffuseShader& /*diffuseShader*/)
 {
 
 }
@@ -29,7 +29,7 @@ bool DiffuseShader::Initialize(ID3D11Device* device, HWND hwnd)
 	bool result;
 
 	// Initialize the vertex and pixel shaders.
-	result = InitializeShader(device, hwnd, L"../source/code/Shaders/diffuse_vertex.vs", L"../source/code/Shaders/diffuse_pixel.ps");
+	result = InitializeShader(device, hwnd, L"../../../source/code/Shaders/diffuse_vertex.vs", L"../../../source/code/Shaders/diffuse_pixel.ps");
 	if (!result)
 	{
 		return false;
@@ -366,7 +366,7 @@ void DiffuseShader::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd
 	fout.open("shader-error.txt");
 
 	// Write out the error message.
-	for (int errorIndex = 0; errorIndex < bufferSize; ++errorIndex)
+	for (unsigned errorIndex = 0; errorIndex < bufferSize; ++errorIndex)
 	{
 		fout << compileError[errorIndex];
 	}
