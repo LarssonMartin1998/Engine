@@ -12,8 +12,8 @@ public:
 	~FbxHelper();
 
 	FbxManager* GetFbxManager() { return fbxManager; }
-	FbxIOSettings* GetIOSettings() { return IOSettings; }
-	FbxImporter* GetImporter() { return importer; }
+
+	void ConvertSceneToLeftHandAndMeters(FbxScene*);
 
 	bool Initialize();
 	void Shutdown();
@@ -21,8 +21,7 @@ public:
 private:
 
 	FbxManager* fbxManager;
-	FbxIOSettings* IOSettings;
-	FbxImporter* importer;
+	FbxIOSettings* modelIOSettings;
 
 };
 

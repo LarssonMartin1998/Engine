@@ -2,6 +2,10 @@
 
 #include <d3dcompiler.h>
 #include <fstream>
+#include <string.h>
+
+#include "Application.h"
+#include "FileSystem/FileSystem.h"
 
 DiffuseShader::DiffuseShader()
 : vertexShader (nullptr)
@@ -29,7 +33,7 @@ bool DiffuseShader::Initialize(ID3D11Device* device, HWND hwnd)
 	bool result;
 
 	// Initialize the vertex and pixel shaders.
-	result = InitializeShader(device, hwnd, L"../../../source/code/Shaders/diffuse_vertex.vs", L"../../../source/code/Shaders/diffuse_pixel.ps");
+	result = InitializeShader(device, hwnd, L"diffuse_vertex.vs", L"diffuse_pixel.ps");
 	if (!result)
 	{
 		return false;
@@ -64,23 +68,16 @@ bool DiffuseShader::Render(ID3D11DeviceContext* deviceContext, int indexCount, D
 
 bool DiffuseShader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCHAR* psFilename)
 {
-	HRESULT result;
-	ID3D10Blob* errorMessage;
-	ID3D10Blob* vertexShaderBuffer;
-	ID3D10Blob* pixelShaderBuffer;
-	D3D11_INPUT_ELEMENT_DESC polygonLayout[3];
-	unsigned numElements;
-	D3D11_BUFFER_DESC matrixBufferDesc;
-	D3D11_BUFFER_DESC lightBufferDesc;
-	D3D11_SAMPLER_DESC samplerDesc;
+	FileSystem* fileSystem = Application::GetInstance()->GetFileSystem();
 
 	// Initialize the pointres this function will use to nullptr.
-	errorMessage = nullptr;
-	vertexShaderBuffer = nullptr;
-	pixelShaderBuffer = nullptr;
+	ID3D10Blob* errorMessage = nullptr;
+	ID3D10Blob* vertexShaderBuffer = nullptr;
+	ID3D10Blob* pixelShaderBuffer = nullptr;
 	
 	// Compile the vertex shader code.
-	result = D3DCompileFromFile(vsFilename, NULL, NULL, "DiffuseVertexShader", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &vertexShaderBuffer, &errorMessage);
+	WCHAR* vsFilepath = fileSystem->GetCorrectPathShader(vsFilename);
+	HRESULT result = D3DCompileFromFile(vsFilepath, NULL, NULL, "DiffuseVertexShader", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &vertexShaderBuffer, &errorMessage);
 	if (FAILED(result))
 	{
 		CatchShaderErrorMessage(errorMessage, hwnd, vsFilename);
@@ -88,14 +85,23 @@ bool DiffuseShader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsF
 		return false;
 	}
 
+	// Okay to delete vsFilepath
+	// TODO, THIS MUST BE DELETED
+	//delete vsFilepath;
+
 	// Compile the pixel shader code.
-	result = D3DCompileFromFile(psFilename, NULL, NULL, "DiffusePixelShader", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &pixelShaderBuffer, &errorMessage);
+	WCHAR* psFilepath = fileSystem->GetCorrectPathShader(psFilename);
+	result = D3DCompileFromFile(psFilepath, NULL, NULL, "DiffusePixelShader", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &pixelShaderBuffer, &errorMessage);
 	if (FAILED(result))
 	{
 		CatchShaderErrorMessage(errorMessage, hwnd, psFilename);
 
 		return false;
 	}
+
+	// Okay to delete psFilepath
+	// TODO, THIS MUST BE DELETED
+	//delete psFilepath;
 
 	// Create the vertex shader from our buffer.
 	result = device->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), NULL, &vertexShader);
@@ -113,6 +119,7 @@ bool DiffuseShader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsF
 
 	// Create the vertex input layout decription
 	// This setup needs to match the VertexType structure in the ModeClass and in the shader.
+	D3D11_INPUT_ELEMENT_DESC polygonLayout[3];
 	polygonLayout[0].SemanticName = "POSITION";
 	polygonLayout[0].SemanticIndex = 0;
 	polygonLayout[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
@@ -138,7 +145,7 @@ bool DiffuseShader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsF
 	polygonLayout[2].InstanceDataStepRate = 0;
 
 	// Get a count of the elements in the layout.
-	numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);
+	unsigned numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);
 
 	// Create teh vertex input layout.
 	result = device->CreateInputLayout(polygonLayout, numElements, vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &inputLayout);
@@ -155,6 +162,7 @@ bool DiffuseShader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsF
 	pixelShaderBuffer = nullptr;
 
 	// Create a texture sampler state description.
+	D3D11_SAMPLER_DESC samplerDesc;
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -176,6 +184,7 @@ bool DiffuseShader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsF
 	}
 
 	// Set up the description of the dynamic matrix constant buffer that this is the vertex shader.
+	D3D11_BUFFER_DESC matrixBufferDesc;
 	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
 	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -191,6 +200,7 @@ bool DiffuseShader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsF
 	}
 
 	// Set up the description of the dynamic light constant buffer that this is the vertex shader.
+	D3D11_BUFFER_DESC lightBufferDesc;
 	lightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	lightBufferDesc.ByteWidth = sizeof(LightBufferType);
 	lightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;

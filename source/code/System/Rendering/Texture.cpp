@@ -2,6 +2,10 @@
 
 #include <d3d11.h>
 #include <stdio.h>
+#include <string.h>
+
+#include "Application.h"
+#include "FileSystem/FileSystem.h"
 
 Texture::Texture()
 : targaData (nullptr)
@@ -109,23 +113,18 @@ void Texture::Shutdown()
 // This function will reject 24-bit targa, only supports 32-bit targas
 bool Texture::LoadTarga(char* filename, int& width, int& height)
 {
-	int error;
-	int bpp;
-	int imageSize;
-	FILE* filePtr;
-	unsigned count;
-	TargaHeader targaFileHeader;
-	unsigned char* targaImage;
-
 	// Open the targa file for reading in binary.
-	error = fopen_s(&filePtr, filename, "rb");
+	std::string filepath = Application::GetInstance()->GetFileSystem()->GetCorrectPath(filename);
+	FILE* filePtr;
+	int error = fopen_s(&filePtr, filepath.c_str(), "rb");
 	if (error != 0)
 	{
 		return false;
 	}
 
 	// Read in the file header.
-	count = (unsigned)fread(&targaFileHeader, sizeof(TargaHeader), 1, filePtr);
+	TargaHeader targaFileHeader;
+	unsigned count = (unsigned)fread(&targaFileHeader, sizeof(TargaHeader), 1, filePtr);
 	if (count != (unsigned)1)
 	{
 		return false;
@@ -134,7 +133,7 @@ bool Texture::LoadTarga(char* filename, int& width, int& height)
 	// Get the important information from the header.
 	height = (int)targaFileHeader.height;
 	width = (int)targaFileHeader.width;
-	bpp = (int)targaFileHeader.bpp;
+	int bpp = (int)targaFileHeader.bpp;
 
 	// Make sure that it's 32-bit and not 24-bit.
 	if (bpp != 32)
@@ -143,10 +142,10 @@ bool Texture::LoadTarga(char* filename, int& width, int& height)
 	}
 
 	// Calculate the size of the 32-bit image data.
-	imageSize = width * height * 4;
+	int imageSize = width * height * 4;
 
 	// Allocate memory for the targa image data.
-	targaImage = new unsigned char[imageSize];
+	unsigned char* targaImage = new unsigned char[imageSize];
 	if (!targaImage)
 	{
 		return false;

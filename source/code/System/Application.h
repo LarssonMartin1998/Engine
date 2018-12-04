@@ -4,14 +4,12 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
-
-#ifdef DEBUG
 #include <assert.h>
-#endif
 
 class Input;
 class Graphics;
 class FbxHelper;
+class FileSystem;
 
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -28,6 +26,7 @@ public:
 	void Run();
 
 	FbxHelper* GetFbxHelper() { return fbxHelper; }
+	FileSystem* GetFileSystem() { return fileSystem; }
 
 	LRESULT CALLBACK MessageHandler(HWND, UINT, WPARAM, LPARAM);
 
@@ -47,6 +46,7 @@ private:
 	HINSTANCE hinstance;
 	HWND hwnd;
 
+	FileSystem* fileSystem;
 	FbxHelper* fbxHelper;
 	Graphics* graphics;
 	Input* input;

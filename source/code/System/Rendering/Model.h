@@ -2,12 +2,14 @@
 #ifndef _MODEL_H_
 #define _MODEL_H_
 
+#include "fbxsdk.h"
 #include <directxmath.h>
+#include <vector>
 
-class ID3D11Device;
-class ID3D11DeviceContext;
-class ID3D11Buffer;
-class ID3D11ShaderResourceView;
+struct ID3D11Device;
+struct ID3D11DeviceContext;
+struct ID3D11Buffer;
+struct ID3D11ShaderResourceView;
 class Texture;
 
 class Model
@@ -38,9 +40,9 @@ private:
 
 	struct ModelData
 	{
-		float x, y, z;
-		float u, v;
-		float normalX, normalY, normalZ;
+		DirectX::XMFLOAT3 position;
+		DirectX::XMFLOAT2 uv;
+		DirectX::XMFLOAT3 normal;
 	};
 
 	bool InitializeBuffers(ID3D11Device*);
@@ -48,14 +50,17 @@ private:
 	void RenderBuffers(ID3D11DeviceContext*);
 
 	bool LoadFbx(char*);
+	bool LoadModel(char*);
 	void ReleaseModel();
+
+	void ReadNormal(FbxMesh*, int, int, DirectX::XMFLOAT3&);
 
 	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, char*);
 	void ReleaseTexture();
 
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* indexBuffer;
-	ModelData* modelData;
+	std::vector<ModelData> modelData;
 	int vertexCount;
 	int indexCount;
 

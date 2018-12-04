@@ -3,6 +3,7 @@
 #include "Input.h"
 #include "Rendering/Graphics.h"
 #include "Fbx/FbxHelper.h"
+#include "FileSystem/FileSystem.h"
 
 Application* Application::instance = nullptr;
 
@@ -10,6 +11,7 @@ Application::Application()
 : graphics (nullptr)
 , input (nullptr)
 , fbxHelper (nullptr)
+, fileSystem (nullptr)
 {
 
 }
@@ -99,6 +101,18 @@ bool Application::InitializeEngine()
 		return false;
 	}
 
+	fileSystem = new FileSystem();
+	if (!fileSystem)
+	{
+		return false;
+	}
+
+	result = fileSystem->Initialize();
+	if (!result)
+	{
+		return false;
+	}
+
 	input = new Input();
 	if (!input)
 	{
@@ -177,6 +191,19 @@ void Application::ShutdownEngine()
 		graphics->Shutdown();
 		delete graphics;
 		graphics = nullptr;
+	}
+
+	if (fbxHelper)
+	{
+		fbxHelper->Shutdown();
+		delete fbxHelper;
+		fbxHelper = nullptr;
+	}
+
+	if (fileSystem)
+	{
+		delete fileSystem;
+		fileSystem = nullptr;
 	}
 }
 

@@ -1,14 +1,15 @@
 #include "FbxHelper.h"
 
+#include "fbxsdk/scene/fbxaxissystem.h"
+
 FbxHelper::FbxHelper()
 : fbxManager (nullptr)
 , IOSettings (nullptr)
-, importer (nullptr)
 {
 
 }
 
-FbxHelper::FbxHelper(const FbxHelper& fbxHelper)
+FbxHelper::FbxHelper(const FbxHelper& /*fbxHelper*/)
 {
 
 }
@@ -31,26 +32,27 @@ bool FbxHelper::Initialize()
 	{
 		return false;
 	}
+	IOSettings->SetBoolProp(IMP_FBX_PIVOT, true);
+	IOSettings->SetBoolProp(IMP_FBX_CONSTRAINT, false);
+	IOSettings->SetBoolProp(IMP_FBX_MATERIAL, false);
+	IOSettings->SetBoolProp(IMP_FBX_TEXTURE, false);
+	IOSettings->SetBoolProp(IMP_FBX_MODEL, true);
+	IOSettings->SetBoolProp(IMP_FBX_AUDIO, false);
+	IOSettings->SetBoolProp(IMP_FBX_ANIMATION, false);
+	IOSettings->SetBoolProp(IMP_FBX_PASSWORD_ENABLE, false);
+	IOSettings->SetBoolProp(IMP_FBX_LINK, false);
+	IOSettings->SetBoolProp(IMP_FBX_SHAPE, true);
+	IOSettings->SetBoolProp(IMP_FBX_GOBO, false);
+	IOSettings->SetBoolProp(IMP_FBX_CHARACTER, false);
+	IOSettings->SetBoolProp(IMP_FBX_TEMPLATE, false);
 
 	fbxManager->SetIOSettings(IOSettings);
-
-	importer = FbxImporter::Create(fbxManager, "");
-	if (!importer)
-	{
-		return false;
-	}
 
 	return true;
 }
 
 void FbxHelper::Shutdown()
 {
-	if (importer)
-	{
-		importer->Destroy();
-		importer = nullptr;
-	}
-
 	if (IOSettings)
 	{
 		IOSettings->Destroy();
@@ -62,4 +64,10 @@ void FbxHelper::Shutdown()
 		fbxManager->Destroy();
 		fbxManager = nullptr;
 	}
+}
+
+void FbxHelper::ConvertSceneToLeftHandAndMeters(FbxScene* scene)
+{
+	//FbxAxisSystem::DirectX.ConvertScene(scene);
+	//FbxSystemUnit::m.ConvertScene(scene);
 }

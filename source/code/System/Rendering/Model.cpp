@@ -1,24 +1,24 @@
 #include "Model.h"
 
 #include <fstream>
+#include <vector>
 #include <d3d11.h>
 
-#include "fbxsdk.h"
 #include "Texture.h"
 #include "Application.h"
+#include "FileSystem/FileSystem.h"
 #include "Fbx/FbxHelper.h"
-
+#include "fbxsdk/scene/fbxaxissystem.h"
 
 Model::Model()
 : vertexBuffer(nullptr)
 , indexBuffer(nullptr)
-, modelData(nullptr)
 , texture (nullptr)
 {
 	
 }
 
-Model::Model(const Model& model)
+Model::Model(const Model& /*model*/)
 {
 
 }
@@ -32,7 +32,12 @@ bool Model::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
 {
 	bool result;
 
-	//result = LoadModel(modelFilename);
+	result = LoadModel(modelFilename);
+	if (!result)
+	{
+		return false;
+	}
+	//result = LoadFbx(modelFilename);
 	//if (!result)
 	//{
 	//	return false;
@@ -101,9 +106,9 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 		VertexShaderType& vertex = vertices[vertexIndex];
 		ModelData& md = modelData[vertexIndex];
 
-		vertex.position = DirectX::XMFLOAT3(md.x, md.y, md.z);
-		vertex.texture = DirectX::XMFLOAT2(md.u, md.v);
-		vertex.normal = DirectX::XMFLOAT3(md.normalX, md.normalY, md.normalZ);
+		vertex.position = md.position;
+		vertex.texture = md.uv;
+		vertex.normal = md.normal;
 
 		indices[vertexIndex] = vertexIndex;
 	}
@@ -234,15 +239,21 @@ void Model::ReleaseTexture()
 bool Model::LoadFbx(char* filename)
 {
 	bool result;
+
+	FbxHelper* fbxHelper = Application::GetInstance()->GetFbxHelper();
+	FbxManager* fbxManager = fbxHelper->GetFbxManager();
+	FbxIOSettings* IOSettings = fbxManager->GetIOSettings();
 	FbxImporter* importer;
-	FbxScene* fbxScene;
+	FbxScene* fbxScene = FbxScene::Create(fbxManager, "");
 	FbxNode* fbxRootNode;
-	int polygonCount;
-	int vertexCounter;
 
-	FbxManager* fbxManager = Application::GetInstance()->GetFbxHelper()->GetFbxManager();
+	importer = FbxImporter::Create(fbxManager, "");
 
-	fbxScene = FbxScene::Create(fbxManager, "");
+	result = importer->Initialize(filename, -1, IOSettings);
+	if (!result)
+	{
+		return false;
+	}
 
 	result = importer->Import(fbxScene);
 	if (!result)
@@ -250,6 +261,10 @@ bool Model::LoadFbx(char* filename)
 		return false;
 	}
 
+	// Convert the scene to left handed suited for DirectX
+	fbxHelper->ConvertSceneToLeftHandAndMeters(fbxScene);
+
+	// Importer has imported the scene, it's safe to destroy.
 	importer->Destroy();
 
 	fbxRootNode = fbxScene->GetRootNode();
@@ -259,114 +274,94 @@ bool Model::LoadFbx(char* filename)
 		for (int i = 0; i < fbxRootNode->GetChildCount(); i++)
 		{
 			FbxNode* fbxChildNode = fbxRootNode->GetChild(i);
-			FbxNodeAttribute::EType attributeType;
-			FbxMesh* mesh;
-			FbxVector4* vertices;
+			FbxNodeAttribute* nodeAttribute = fbxChildNode->GetNodeAttribute();
 
-			if (fbxChildNode->GetNodeAttribute() == NULL)
-			{
-				continue;
-			}
-				
-
-			attributeType = fbxChildNode->GetNodeAttribute()->GetAttributeType();
-
-			if (attributeType != FbxNodeAttribute::eMesh)
+			if(nodeAttribute == NULL)
 			{
 				continue;
 			}
 
-			mesh = (FbxMesh*)fbxChildNode->GetNodeAttribute();
-
-			vertices = mesh->GetControlPoints();
-
-			polygonCount = mesh->GetPolygonCount();
-			vertexCount = polygonCount * 3;
-			indexCount = vertexCount;
-			modelData = new ModelData[vertexCount];
-
-			vertexCounter = 0;
-			for (int polygonIndex = 0; polygonIndex < polygonCount; ++polygonIndex)
+			if (nodeAttribute->GetAttributeType() != FbxNodeAttribute::eMesh)
 			{
-				int numVertices = mesh->GetPolygonSize(polygonIndex);
-				assert(numVertices == 3);
+				continue;
+			}
 
-				for (int vertexIndex = 0; vertexIndex < numVertices; ++vertexIndex)
+			FbxMesh* mesh = static_cast<FbxMesh*>(nodeAttribute);
+			FbxVector4* vertices = mesh->GetControlPoints();
+
+			vertexCount = 0;
+			indexCount = 0;
+
+			for (int j = 0; j < mesh->GetPolygonCount(); j++)
+			{
+				int numVertices = mesh->GetPolygonSize(j);
+
+				for (int k = 0; k < numVertices; k++)
 				{
-					int controlPointIndex = mesh->GetPolygonVertex(polygonIndex, vertexIndex);
+					int controlPointIndex = mesh->GetPolygonVertex(j, k);
 
-					modelData[vertexCounter].x = (float)vertices[controlPointIndex].mData[0];
-					modelData[vertexCounter].y = (float)vertices[controlPointIndex].mData[0];
-					modelData[vertexCounter].z = (float)vertices[controlPointIndex].mData[0];
+					ModelData md;
 
-					vertexCounter++;
+					md.position.x = (float)vertices[controlPointIndex].mData[0];
+					md.position.y = (float)vertices[controlPointIndex].mData[1];
+					md.position.z = (float)vertices[controlPointIndex].mData[2];
+
+					ReadNormal(mesh, controlPointIndex, vertexCount, md.normal);
+
+					md.uv.x = 0.0f;
+					md.uv.y = 1.0f;
+
+					modelData.push_back(md);
+					vertexCount++;
 				}
 			}
 
+			indexCount = vertexCount;
 		}
 	}
 
 	return true;
 }
 
-//bool Model::LoadModel(char* filename)
-//{
-//	std::ifstream fin;
-//	char input;
-//
-//	// Open the model file.
-//	fin.open(filename);
-//
-//	// If it could not open the file then exit.
-//	if (fin.fail())
-//	{
-//		return false;
-//	}
-//
-//	// Read up to the value of vertex count.
-//	fin.get(input);
-//	while (input != ':')
-//	{
-//		fin.get(input);
-//	}
-//
-//	// Read in the vertex count.
-//	fin >> vertexCount;
-//
-//	// Set the number of indices to be the same as the vertex count.
-//	indexCount = vertexCount;
-//
-//	// Create the model using the vertex count that was read in.
-//	modelData = new ModelData[vertexCount];
-//	if (!modelData)
-//	{
-//		return false;
-//	}
-//
-//	// Read up to the beginning of the data.
-//	fin.get(input);
-//	while (input != ':')
-//	{
-//		fin.get(input);
-//	}
-//	fin.get(input);
-//	fin.get(input);
-//
-//	// Read in the vertex data.
-//	for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
-//	{
-//		ModelData& md = modelData[vertexIndex];
-//
-//		fin >> md.x >> md.y >> md.z;
-//		fin >> md.u >> md.v;
-//		fin >> md.normalX >> md.normalY >> md.normalZ;
-//	}
-//
-//	// Close the model file.
-//	fin.close();
-//
-//	return true;
-//}
+bool Model::LoadModel(char* filename)
+{
+	std::ifstream stream = Application::GetInstance()->GetFileSystem()->LoadFileToStream(filename);
+	char input;
+
+	// Read up to the value of vertex count.
+	stream.get(input);
+	while (input != ':')
+	{
+		stream.get(input);
+	}
+
+	// Read in the vertex count.
+	stream >> vertexCount;
+	indexCount = vertexCount;
+
+	modelData.clear();
+
+	// Read up to the beginning of the data.
+	stream.get(input);
+	while (input != ':')
+	{
+		stream.get(input);
+	}
+	stream.get(input);
+	stream.get(input);
+
+	// Read in the vertex data.
+	for (int vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++)
+	{
+		ModelData md;
+		stream >> md.position.x >> md.position.y >> md.position.z;
+		stream >> md.uv.x >> md.uv.y;
+		stream >> md.normal.x >> md.normal.y >> md.normal.z;
+		modelData.push_back(md);
+	}
+
+	return true;
+}
 
 ID3D11ShaderResourceView* Model::GetTexture()
 {
@@ -375,9 +370,58 @@ ID3D11ShaderResourceView* Model::GetTexture()
 
 void Model::ReleaseModel()
 {
-	if (modelData)
+
+}
+
+void Model::ReadNormal(FbxMesh* mesh, int ctrlPointIndex, int vertexCounter, DirectX::XMFLOAT3& outNormal)
+{
+	if (mesh->GetElementNormalCount() < 1)
 	{
-		delete[] modelData;
-		modelData = nullptr;
+		throw std::exception("Invalid Normal Number");
+	}
+
+	FbxGeometryElementNormal* vertexNormal = mesh->GetElementNormal();
+	if (!vertexNormal)
+	{
+		throw std::exception("vertexNormal is nullptr");
+	}
+
+	if (vertexNormal->GetMappingMode() == FbxGeometryElementNormal::eByControlPoint)
+	{
+		int normalIndex = 0;
+
+		if (vertexNormal->GetReferenceMode() == FbxGeometryElement::eDirect)
+		{
+			normalIndex = ctrlPointIndex;
+		}
+
+		if (vertexNormal->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
+		{
+			normalIndex = vertexNormal->GetIndexArray().GetAt(ctrlPointIndex);
+		}
+
+		FbxVector4 normal = vertexNormal->GetDirectArray().GetAt(normalIndex);
+		outNormal.x = static_cast<float>(normal.mData[0]);
+		outNormal.y = static_cast<float>(normal.mData[1]);
+		outNormal.z = static_cast<float>(normal.mData[2]);
+	}
+	else if (vertexNormal->GetMappingMode() == FbxGeometryElement::eByPolygonVertex)
+	{
+		int normalIndex = 0;
+
+		if (vertexNormal->GetReferenceMode() == FbxGeometryElement::eDirect)
+		{
+			normalIndex = vertexCounter;
+		}
+
+		if (vertexNormal->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
+		{
+			normalIndex = vertexNormal->GetIndexArray().GetAt(vertexCounter);
+		}
+
+		FbxVector4 normal = vertexNormal->GetDirectArray().GetAt(normalIndex);
+		outNormal.x = static_cast<float>(normal.mData[0]);
+		outNormal.y = static_cast<float>(normal.mData[1]);
+		outNormal.z = static_cast<float>(normal.mData[2]);
 	}
 }

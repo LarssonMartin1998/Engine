@@ -1,4 +1,4 @@
-#include "Graphics.h"
+ #include "Graphics.h"
 
 #include "D3D.h"
 #include "Camera.h"
@@ -61,8 +61,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	
 	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "../../data/models/cone.fbx", "../../data/textures/stone01.tga");
 	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "../../data/models/test.fbx", "../../data/textures/stone01.tga");
-	/*result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "../../data/models/suzanne.fbx", "../../data/textures/stone01.tga");*/
-	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "../../data/models/cube.txt", "../../data/textures/stone01.tga");
+	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "../../data/models/suzanne.fbx", "../../data/textures/stone01.tga");
+	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/cube.txt", "textures/stone01.tga");
 	if (!result)
 	{
 		MessageBox(hwnd, "Could not initialize the model object.", "Error", MB_OK);
