@@ -59,10 +59,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 	
-	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "../../data/models/cone.fbx", "../../data/textures/stone01.tga");
-	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "../../data/models/test.fbx", "../../data/textures/stone01.tga");
-	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "../../data/models/suzanne.fbx", "../../data/textures/stone01.tga");
-	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/cube.txt", "textures/stone01.tga");
+	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/bell.fbx", "textures/stone01.tga");
+	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/cube.txt", "textures/stone01.tga");
 	if (!result)
 	{
 		MessageBox(hwnd, "Could not initialize the model object.", "Error", MB_OK);

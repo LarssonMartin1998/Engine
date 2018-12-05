@@ -32,16 +32,16 @@ bool Model::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
 {
 	bool result;
 
-	result = LoadModel(modelFilename);
+	/*result = LoadModel(modelFilename);
+	if (!result)
+	{
+		return false;
+	}*/
+	result = LoadFbx(modelFilename);
 	if (!result)
 	{
 		return false;
 	}
-	//result = LoadFbx(modelFilename);
-	//if (!result)
-	//{
-	//	return false;
-	//}
 
 	result = InitializeBuffers(device);
 	if (!result)
@@ -78,23 +78,15 @@ void Model::Render(ID3D11DeviceContext* deviceContext)
 
 bool Model::InitializeBuffers(ID3D11Device* device)
 {
-	HRESULT result;
-	VertexShaderType* vertices;
-	unsigned long* indices;
-	D3D11_BUFFER_DESC vertexBufferDesc;
-	D3D11_BUFFER_DESC indexBufferDesc;
-	D3D11_SUBRESOURCE_DATA vertexData;
-	D3D11_SUBRESOURCE_DATA indexData;
-
-	// Create the vertex array.
-	vertices = new VertexShaderType[vertexCount];
+	// Create the index array.
+	VertexShaderType* vertices = new VertexShaderType[vertexCount];
 	if (!vertices)
 	{
 		return false;
 	}
 
 	// Create the index array.
-	indices = new unsigned long[indexCount];
+	unsigned long* indices = new unsigned long[indexCount];
 	if (!indices)
 	{
 		return false;
@@ -103,17 +95,18 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	// Load the vertex array and index array with data.
 	for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
 	{
-		VertexShaderType& vertex = vertices[vertexIndex];
+		VertexShaderType& v = vertices[vertexIndex];
 		ModelData& md = modelData[vertexIndex];
 
-		vertex.position = md.position;
-		vertex.texture = md.uv;
-		vertex.normal = md.normal;
+		v.position = md.position;
+		v.texture = md.uv;
+		v.normal = md.normal;
 
 		indices[vertexIndex] = vertexIndex;
 	}
 
 	// Set up the description of the static vertex buffer.
+	D3D11_BUFFER_DESC vertexBufferDesc;
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertexBufferDesc.ByteWidth = sizeof(VertexShaderType) * vertexCount;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -122,18 +115,20 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	vertexBufferDesc.StructureByteStride = 0;
 
 	// Give the subresource structure a pointer to the vertex data.
+	D3D11_SUBRESOURCE_DATA vertexData;
 	vertexData.pSysMem = vertices;
 	vertexData.SysMemPitch = 0;
 	vertexData.SysMemSlicePitch = 0;
 
 	// Now create the vertex buffer.
-	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &vertexBuffer);
+	HRESULT result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &vertexBuffer);
 	if (FAILED(result))
 	{
 		return false;
 	}
 
 	// Set up the description of the static index buffer.
+	D3D11_BUFFER_DESC indexBufferDesc;
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	indexBufferDesc.ByteWidth = sizeof(unsigned long) * indexCount;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
@@ -142,6 +137,7 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	indexBufferDesc.StructureByteStride = 0;
 
 	// Give the subresource structure a pointer to the index data.
+	D3D11_SUBRESOURCE_DATA indexData;
 	indexData.pSysMem = indices;
 	indexData.SysMemPitch = 0;
 	indexData.SysMemSlicePitch = 0;
@@ -238,18 +234,16 @@ void Model::ReleaseTexture()
 
 bool Model::LoadFbx(char* filename)
 {
-	bool result;
+	Application* app = Application::GetInstance();
 
-	FbxHelper* fbxHelper = Application::GetInstance()->GetFbxHelper();
+	FbxHelper* fbxHelper = app->GetFbxHelper();
 	FbxManager* fbxManager = fbxHelper->GetFbxManager();
 	FbxIOSettings* IOSettings = fbxManager->GetIOSettings();
-	FbxImporter* importer;
 	FbxScene* fbxScene = FbxScene::Create(fbxManager, "");
-	FbxNode* fbxRootNode;
+	FbxImporter* importer = FbxImporter::Create(fbxManager, "");
 
-	importer = FbxImporter::Create(fbxManager, "");
-
-	result = importer->Initialize(filename, -1, IOSettings);
+	std::string filepath = app->GetFileSystem()->GetCorrectPath(filename);
+	bool result = importer->Initialize(filepath.c_str(), -1, IOSettings);
 	if (!result)
 	{
 		return false;
@@ -261,13 +255,24 @@ bool Model::LoadFbx(char* filename)
 		return false;
 	}
 
-	// Convert the scene to left handed suited for DirectX
-	fbxHelper->ConvertSceneToLeftHandAndMeters(fbxScene);
-
 	// Importer has imported the scene, it's safe to destroy.
 	importer->Destroy();
 
-	fbxRootNode = fbxScene->GetRootNode();
+	// Convert the scene to left handed suited for DirectX
+	fbxHelper->ConvertSceneToLeftHandAndMeters(fbxScene);
+
+	FbxNode* fbxRootNode = fbxScene->GetRootNode();
+
+	vertexCount = 0;
+	indexCount = 0;
+
+	int upDir;
+	fbxScene->GetGlobalSettings().GetAxisSystem().GetUpVector(upDir);
+	int frontDir;
+	fbxScene->GetGlobalSettings().GetAxisSystem().GetFrontVector(frontDir);
+
+	FbxAxisSystem directX;
+	directX.ConvertScene(fbxScene);
 
 	if (fbxRootNode)
 	{
@@ -287,10 +292,7 @@ bool Model::LoadFbx(char* filename)
 			}
 
 			FbxMesh* mesh = static_cast<FbxMesh*>(nodeAttribute);
-			FbxVector4* vertices = mesh->GetControlPoints();
-
-			vertexCount = 0;
-			indexCount = 0;
+			FbxVector4* vertexArray = mesh->GetControlPoints();
 
 			for (int j = 0; j < mesh->GetPolygonCount(); j++)
 			{
@@ -302,22 +304,25 @@ bool Model::LoadFbx(char* filename)
 
 					ModelData md;
 
-					md.position.x = (float)vertices[controlPointIndex].mData[0];
-					md.position.y = (float)vertices[controlPointIndex].mData[1];
-					md.position.z = (float)vertices[controlPointIndex].mData[2];
+					md.position.x = (float)vertexArray[controlPointIndex].mData[0];
+					md.position.y = (float)vertexArray[controlPointIndex].mData[1];
+					md.position.z = (float)vertexArray[controlPointIndex].mData[2];
 
 					ReadNormal(mesh, controlPointIndex, vertexCount, md.normal);
 
-					md.uv.x = 0.0f;
-					md.uv.y = 1.0f;
+					// Todo: Fix UV's
+					// Temporary
+					md.uv.x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					md.uv.y = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+					// Temporary
 
 					modelData.push_back(md);
 					vertexCount++;
 				}
 			}
-
-			indexCount = vertexCount;
 		}
+
+		indexCount = vertexCount;
 	}
 
 	return true;

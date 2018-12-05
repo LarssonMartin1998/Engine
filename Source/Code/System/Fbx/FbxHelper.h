@@ -21,7 +21,7 @@ public:
 private:
 
 	FbxManager* fbxManager;
-	FbxIOSettings* modelIOSettings;
+	FbxIOSettings* IOSettings;
 
 };
 
