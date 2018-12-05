@@ -5,13 +5,14 @@
 #include "Model.h"
 #include "Light.h"
 #include "DiffuseShader.h"
+#include "SpecularShader.h"
 
 Graphics::Graphics()
 : direct3D (nullptr)
 , camera (nullptr)
 , model (nullptr)
 , light (nullptr)
-, diffuseShader (nullptr)
+, specularShader (nullptr)
 {
 
 }
@@ -50,8 +51,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 4.5f, -7.5f);
-	camera->SetRotation(30.0f, 0.0f, 0.0f);
+	camera->SetPosition(0.0f, 3.5f, -8.5f);
+	camera->SetRotation(20.0f, 0.0f, 0.0f);
 
 	model = new Model();
 	if (!model)
@@ -79,24 +80,30 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	light->ambientColor.w = 1.0f;
 
 	light->diffuseColor.x = 1.0f;
-	light->diffuseColor.y = 0.9f;
-	light->diffuseColor.z = 0.7f;
+	light->diffuseColor.y = 1.0f;
+	light->diffuseColor.z = 1.0f;
 	light->diffuseColor.w = 1.0f;
 	
-	light->lightDirection.x = 0.25f;
-	light->lightDirection.y = -0.7f;
+	light->lightDirection.x = -0.5f;
+	light->lightDirection.y = 0.1f;
 	light->lightDirection.z = 1.0f;
 
-	diffuseShader = new DiffuseShader();
-	if (!diffuseShader)
+	light->specularColor.x = 1.0f;
+	light->specularColor.y = 1.0f;
+	light->specularColor.z = 1.0f;
+	light->specularColor.w = 1.0f;
+	light->specularPower = 32.0f;
+
+	specularShader = new SpecularShader();
+	if (!specularShader)
 	{
 		return false;
 	}
 
-	result = diffuseShader->Initialize(direct3D->GetDevice(), hwnd);
+	result = specularShader->Initialize(direct3D->GetDevice(), hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, "Could not initialize the diffuse shader object.", "Error", MB_OK);
+		MessageBox(hwnd, "Could not initialize the specular shader object.", "Error", MB_OK);
 		return false;
 	}
 
@@ -131,11 +138,11 @@ void Graphics::Shutdown()
 		light = nullptr;
 	}
 
-	if (diffuseShader)
+	if (specularShader)
 	{
-		diffuseShader->Shutdown();
-		delete diffuseShader;
-		diffuseShader = nullptr;
+		specularShader->Shutdown();
+		delete specularShader;
+		specularShader = nullptr;
 	}
 }
 
@@ -179,8 +186,7 @@ bool Graphics::Render(float rotation)
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	model->Render(direct3D->GetDeviceContext());
 
-	// Render the model using the diffuse shader.
-	result = diffuseShader->Render(direct3D->GetDeviceContext(), model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, model->GetTexture(), light->lightDirection, light->diffuseColor, light->ambientColor);
+	result = specularShader->Render(direct3D->GetDeviceContext(), model->GetIndexCount(), camera->GetPosition(), worldMatrix, viewMatrix, projectionMatrix, model->GetTexture(), light->lightDirection, light->diffuseColor, light->ambientColor, light->specularPower, light->specularColor);
 	if (!result)
 	{
 		return false;

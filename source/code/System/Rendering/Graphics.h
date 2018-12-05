@@ -12,6 +12,7 @@ class D3D;
 class Camera;
 class Model;
 class DiffuseShader;
+class SpecularShader;
 class Light;
 
 class Graphics
@@ -35,7 +36,7 @@ private:
 	Camera* camera;
 	Model* model;
 	Light* light;
-	DiffuseShader* diffuseShader;
+	SpecularShader* specularShader;
 
 };
 
