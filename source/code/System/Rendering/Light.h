@@ -13,6 +13,7 @@ public:
 	
 	DirectX::XMFLOAT3 lightDirection;
 	DirectX::XMFLOAT4 diffuseColor;
+	DirectX::XMFLOAT4 ambientColor;
 };
 
 #endif

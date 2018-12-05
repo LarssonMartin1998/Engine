@@ -47,7 +47,7 @@ void DiffuseShader::Shutdown()
 	ShutdownShader();
 }
 
-bool DiffuseShader::Render(ID3D11DeviceContext* deviceContext, int indexCount, DirectX::XMMATRIX& worldMatrix, DirectX::XMMATRIX& viewMatrix, DirectX::XMMATRIX& projectionMatrix, ID3D11ShaderResourceView* texture, DirectX::XMFLOAT3& lightDirection, DirectX::XMFLOAT4& diffuseColor)
+bool DiffuseShader::Render(ID3D11DeviceContext* deviceContext, int indexCount, DirectX::XMMATRIX& worldMatrix, DirectX::XMMATRIX& viewMatrix, DirectX::XMMATRIX& projectionMatrix, ID3D11ShaderResourceView* texture, DirectX::XMFLOAT3& lightDirection, DirectX::XMFLOAT4& diffuseColor, DirectX::XMFLOAT4& ambientColor)
 {
 	bool result;
 
@@ -58,7 +58,7 @@ bool DiffuseShader::Render(ID3D11DeviceContext* deviceContext, int indexCount, D
 		return false;
 	}
 
-	result = SetUpPixelShaderParameters(deviceContext, texture, lightDirection, diffuseColor);
+	result = SetUpPixelShaderParameters(deviceContext, texture, lightDirection, diffuseColor, ambientColor);
 
 	// Now render the prepared buffers with the shader.
 	RenderShader(deviceContext, indexCount);
@@ -294,7 +294,7 @@ bool DiffuseShader::SetUpVertexShaderParameters(ID3D11DeviceContext* deviceConte
 	return true;
 }
 
-bool DiffuseShader::SetUpPixelShaderParameters(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView* texture, DirectX::XMFLOAT3& lightDirection, DirectX::XMFLOAT4& diffuseColor)
+bool DiffuseShader::SetUpPixelShaderParameters(ID3D11DeviceContext* deviceContext, ID3D11ShaderResourceView* texture, DirectX::XMFLOAT3& lightDirection, DirectX::XMFLOAT4& diffuseColor, DirectX::XMFLOAT4& ambientColor)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -314,6 +314,7 @@ bool DiffuseShader::SetUpPixelShaderParameters(ID3D11DeviceContext* deviceContex
 	// Copy the matrices into the constant buffer.
 	lightData->lightDirection = lightDirection;
 	lightData->diffuseColor = diffuseColor;
+	lightData->ambientColor = ambientColor;
 	lightData->pad01 = 0.0f;
 
 	deviceContext->Unmap(lightBuffer, 0);

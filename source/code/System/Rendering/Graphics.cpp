@@ -59,8 +59,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 	
-	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/bell.fbx", "textures/stone01.tga");
-	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/cube.txt", "textures/stone01.tga");
+	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/bell.fbx", "textures/stone01.tga");
+	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/cube.txt", "textures/stone01.tga");
 	if (!result)
 	{
 		MessageBox(hwnd, "Could not initialize the model object.", "Error", MB_OK);
@@ -73,9 +73,14 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	light->ambientColor.x = 0.125f;
+	light->ambientColor.y = 0.125f;
+	light->ambientColor.z = 0.125f;
+	light->ambientColor.w = 1.0f;
+
 	light->diffuseColor.x = 1.0f;
-	light->diffuseColor.y = 1.0f;
-	light->diffuseColor.z = 1.0f;
+	light->diffuseColor.y = 0.9f;
+	light->diffuseColor.z = 0.7f;
 	light->diffuseColor.w = 1.0f;
 	
 	light->lightDirection.x = 0.25f;
@@ -175,7 +180,7 @@ bool Graphics::Render(float rotation)
 	model->Render(direct3D->GetDeviceContext());
 
 	// Render the model using the diffuse shader.
-	result = diffuseShader->Render(direct3D->GetDeviceContext(), model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, model->GetTexture(), light->lightDirection, light->diffuseColor);
+	result = diffuseShader->Render(direct3D->GetDeviceContext(), model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, model->GetTexture(), light->lightDirection, light->diffuseColor, light->ambientColor);
 	if (!result)
 	{
 		return false;

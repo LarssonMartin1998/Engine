@@ -32,16 +32,16 @@ bool Model::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
 {
 	bool result;
 
-	/*result = LoadModel(modelFilename);
-	if (!result)
-	{
-		return false;
-	}*/
-	result = LoadFbx(modelFilename);
+	result = LoadModel(modelFilename);
 	if (!result)
 	{
 		return false;
 	}
+	/*result = LoadFbx(modelFilename);
+	if (!result)
+	{
+		return false;
+	}*/
 
 	result = InitializeBuffers(device);
 	if (!result)

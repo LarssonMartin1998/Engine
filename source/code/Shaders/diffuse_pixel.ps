@@ -3,8 +3,9 @@ SamplerState sampleType;
 
 cbuffer LightBuffer
 {
+	float4 ambientColor;
 	float4 diffuseColor;
-	float4 lightDirection;
+	float3 lightDirection;
 	float pad01;
 };
 
@@ -18,17 +19,16 @@ struct PixelInput
 float4 DiffusePixelShader(PixelInput input) : SV_TARGET
 {
 	float4 textureColor = shaderTexture.Sample(sampleType, input.tex);
+	float4 color = ambientColor;
 
-	// Calculate the amount of light on this pixel, saturate clamps the dot value between 0 and 1.
-	float lightIntensity = saturate(dot(float4(input.normal, 1.0), -lightDirection));
-	float ambientLightIntensity = 0.05;
+	float lightIntensity = saturate(dot(input.normal, -lightDirection));
+	if (lightIntensity > 0.0)
+	{
+		color += (diffuseColor * lightIntensity);
+	}
 
-	// Determine how much the pixel with be lightened up by the light color.
-	float4 directionalColor = saturate(diffuseColor * lightIntensity);
-	float4 ambientColor = saturate(diffuseColor * ambientLightIntensity);
+	color = saturate(color);
+	color = color * textureColor;
 
-	// Multiply the texture pixel and the final diffuse color to get the final pixel color result.
-	float4 finalColor = saturate(ambientColor + directionalColor) * textureColor;
-
-	return finalColor;
+	return color;
 }
