@@ -49,6 +49,9 @@ public:
 	void GetWorldMatrix(DirectX::XMMATRIX& worldMatrixRef) { worldMatrixRef = worldMatrix; }
 	void GetOrthographicMatrix(DirectX::XMMATRIX& orthographcMatrixRef) { orthographcMatrixRef = orthographicMatrix; }
 
+	void TurnOnZbuffer();
+	void TurnOffZbuffer();
+
 	void GetVideoCardInfo(char*, int&);
 
 private:
@@ -68,6 +71,7 @@ private:
 	DirectX::XMMATRIX worldMatrix;
 	DirectX::XMMATRIX orthographicMatrix;
 
+	ID3D11DepthStencilState* depthStencilStateDisabled;
 };
 
 #endif

@@ -11,6 +11,7 @@ const float SCREEN_NEAR = 0.1f;
 class D3D;
 class Camera;
 class Model;
+class Bitmap;
 class DiffuseShader;
 class SpecularShader;
 class Light;
@@ -35,6 +36,7 @@ private:
 	D3D* direct3D;
 	Camera* camera;
 	Model* model;
+	Bitmap* bitmap;
 	Light* light;
 	SpecularShader* specularShader;
 

@@ -1,7 +1,6 @@
 #include "Model.h"
 
 #include <fstream>
-#include <vector>
 #include <d3d11.h>
 
 #include "Texture.h"
@@ -78,7 +77,7 @@ void Model::Render(ID3D11DeviceContext* deviceContext)
 
 bool Model::InitializeBuffers(ID3D11Device* device)
 {
-	// Create the index array.
+	// Create the vertex array.
 	VertexShaderType* vertices = new VertexShaderType[vertexCount];
 	if (!vertices)
 	{

@@ -3,6 +3,7 @@
 #include "D3D.h"
 #include "Camera.h"
 #include "Model.h"
+#include "Bitmap.h"
 #include "Light.h"
 #include "DiffuseShader.h"
 #include "SpecularShader.h"
@@ -11,6 +12,7 @@ Graphics::Graphics()
 : direct3D (nullptr)
 , camera (nullptr)
 , model (nullptr)
+, bitmap (nullptr)
 , light (nullptr)
 , specularShader (nullptr)
 {
@@ -65,6 +67,19 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!result)
 	{
 		MessageBox(hwnd, "Could not initialize the model object.", "Error", MB_OK);
+		return false;
+	}
+
+	bitmap = new Bitmap();
+	if (!bitmap)
+	{
+		return false;
+	}
+
+	result = bitmap->Initialize(direct3D->GetDevice(), screenWidth, screenHeight, L"textures/seafloor.dds", 256, 256);
+	if (!result)
+	{
+		MessageBox(hwnd, "Could not initialize the bitmap object.", "Error", MB_OK);
 		return false;
 	}
 
@@ -132,6 +147,13 @@ void Graphics::Shutdown()
 		model = nullptr;
 	}
 
+	if (bitmap)
+	{
+		bitmap->Shutdown();
+		delete bitmap;
+		bitmap = nullptr;
+	}
+
 	if (light)
 	{
 		delete light;
@@ -169,6 +191,7 @@ bool Graphics::Render(float rotation)
 	DirectX::XMMATRIX worldMatrix;
 	DirectX::XMMATRIX viewMatrix;
 	DirectX::XMMATRIX projectionMatrix;
+	DirectX::XMMATRIX orthoMatrix;
 
 	// Clear the buffers to begin the scene.
 	direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
@@ -180,17 +203,28 @@ bool Graphics::Render(float rotation)
 	direct3D->GetWorldMatrix(worldMatrix);
 	camera->GetViewMatrix(viewMatrix);
 	direct3D->GetProjectionMatri(projectionMatrix);
+	direct3D->GetOrthographicMatrix(orthoMatrix);
 
-	worldMatrix *= DirectX::XMMatrixRotationY(rotation);
+	direct3D->TurnOffZbuffer();
 
-	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	model->Render(direct3D->GetDeviceContext());
-
-	result = specularShader->Render(direct3D->GetDeviceContext(), model->GetIndexCount(), camera->GetPosition(), worldMatrix, viewMatrix, projectionMatrix, model->GetTexture(), light->lightDirection, light->diffuseColor, light->ambientColor, light->specularPower, light->specularColor);
+	result = bitmap->Render(direct3D->GetDeviceContext(), 100, 100);
 	if (!result)
 	{
 		return false;
 	}
+
+	direct3D->TurnOnZbuffer();
+
+	//worldMatrix *= DirectX::XMMatrixRotationY(rotation);
+
+	//// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	//model->Render(direct3D->GetDeviceContext());
+
+	//result = specularShader->Render(direct3D->GetDeviceContext(), model->GetIndexCount(), camera->GetPosition(), worldMatrix, viewMatrix, projectionMatrix, model->GetTexture(), light->lightDirection, light->diffuseColor, light->ambientColor, light->specularPower, light->specularColor);
+	//if (!result)
+	//{
+	//	return false;
+	//}
 
 	// Present the rendered scene to the screen.
 	direct3D->EndScene();
