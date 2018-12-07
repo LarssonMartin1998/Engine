@@ -2,7 +2,6 @@
 #define _BITMAP_H_
 
 #include <directxmath.h>
-#include <Esent.h>
 
 struct ID3D11Device;
 struct ID3D11DeviceContext;

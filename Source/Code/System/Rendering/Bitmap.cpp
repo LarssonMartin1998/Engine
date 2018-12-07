@@ -6,8 +6,6 @@
 #include "Texture.h"
 #include "Application.h"
 #include "FileSystem/FileSystem.h"
-#include "Fbx/FbxHelper.h"
-#include "fbxsdk/scene/fbxaxissystem.h"
 
 Bitmap::Bitmap()
 : vertexBuffer(nullptr)

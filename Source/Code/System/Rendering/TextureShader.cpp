@@ -16,7 +16,7 @@ TextureShader::TextureShader()
 
 }
 
-TextureShader::TextureShader(const TextureShader& TextureShader)
+TextureShader::TextureShader(const TextureShader& /*textureShader*/)
 {
 
 }
@@ -45,7 +45,7 @@ void TextureShader::Shutdown()
 	ShutdownShader();
 }
 
-bool TextureShader::Render(ID3D11DeviceContext* deviceContext, int indexCount, DirectX::XMMATRIX worldMatrix, DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture)
+bool TextureShader::Render(ID3D11DeviceContext* deviceContext, int indexCount, DirectX::XMMATRIX& worldMatrix, DirectX::XMMATRIX& viewMatrix, DirectX::XMMATRIX& projectionMatrix, ID3D11ShaderResourceView* texture)
 {
 	bool result;
 
