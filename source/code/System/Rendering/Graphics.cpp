@@ -44,7 +44,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	result = direct3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 	if (!result)
 	{
-		MessageBox(hwnd, "Could t initalize Direct3D", "Error", MB_OK);
+		MessageBox(hwnd, "Couldn't initialize Direct3D", "Error", MB_OK);
 		return false;
 	}
 
