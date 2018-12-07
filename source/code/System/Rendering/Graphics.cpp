@@ -55,7 +55,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 0.0f, -5.0f);
+	camera->SetPosition(0.0f, 3.0f, -12.5f);
 	camera->SetRotation(0.0f, 0.0f, 0.0f);
 
 	model = new Model();
@@ -78,7 +78,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	result = bitmap->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), screenWidth, screenHeight, "textures/stone01.tga", 256, 256);
+	result = bitmap->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), screenWidth, screenHeight, "textures/stone01.tga", 128, 128);
 	if (!result)
 	{
 		MessageBox(hwnd, "Could not initialize the bitmap object.", "Error", MB_OK);
@@ -229,7 +229,49 @@ bool Graphics::Render(float rotation)
 
 	direct3D->TurnOffZbuffer();
 
-	result = bitmap->Render(direct3D->GetDeviceContext(), (1024 / 2) - (256 / 2), (768 / 2) - (256 / 2));
+	result = bitmap->Render(direct3D->GetDeviceContext(), 20, 20);
+	if (!result)
+	{
+		return false;
+	}
+
+	result = textureShader->Render(direct3D->GetDeviceContext(), bitmap->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, bitmap->GetTexture());
+	if (!result)
+	{
+		return false;
+	}
+
+	///////////////////////////////////
+
+	result = bitmap->Render(direct3D->GetDeviceContext(), 1024 - 128 - 20, 768 - 128 - 20);
+	if (!result)
+	{
+		return false;
+	}
+
+	result = textureShader->Render(direct3D->GetDeviceContext(), bitmap->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, bitmap->GetTexture());
+	if (!result)
+	{
+		return false;
+	}
+
+	///////////////////////////////////
+
+	result = bitmap->Render(direct3D->GetDeviceContext(), 20, 768 - 128 - 20);
+	if (!result)
+	{
+		return false;
+	}
+
+	result = textureShader->Render(direct3D->GetDeviceContext(), bitmap->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, bitmap->GetTexture());
+	if (!result)
+	{
+		return false;
+	}
+
+	///////////////////////////////////
+
+	result = bitmap->Render(direct3D->GetDeviceContext(), 1024 - 128 - 20, 20);
 	if (!result)
 	{
 		return false;
@@ -243,16 +285,16 @@ bool Graphics::Render(float rotation)
 
 	direct3D->TurnOnZbuffer();
 
-	//worldMatrix *= DirectX::XMMatrixRotationY(rotation);
+	worldMatrix *= DirectX::XMMatrixRotationY(rotation);
 
-	//// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	//model->Render(direct3D->GetDeviceContext());
+	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	model->Render(direct3D->GetDeviceContext());
 
-	//result = specularShader->Render(direct3D->GetDeviceContext(), model->GetIndexCount(), camera->GetPosition(), worldMatrix, viewMatrix, projectionMatrix, model->GetTexture(), light->lightDirection, light->diffuseColor, light->ambientColor, light->specularPower, light->specularColor);
-	//if (!result)
-	//{
-	//	return false;
-	//}
+	result = specularShader->Render(direct3D->GetDeviceContext(), model->GetIndexCount(), camera->GetPosition(), worldMatrix, viewMatrix, projectionMatrix, model->GetTexture(), light->lightDirection, light->diffuseColor, light->ambientColor, light->specularPower, light->specularColor);
+	if (!result)
+	{
+		return false;
+	}
 
 	// Present the rendered scene to the screen.
 	direct3D->EndScene();
