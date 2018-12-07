@@ -1,0 +1,25 @@
+Texture2D shaderTexture;
+SamplerState sampleType;
+
+cbuffer PixelBuffer
+{
+	float4 pixelColor;
+}
+
+struct PixelInput
+{
+	float4 position : SV_POSITION;
+	float4 tex : TEXCOORD0;
+};
+
+float4 TexturePixelShader(PixelInput input) : SV_TARGET
+{
+	float4 color = shaderTexture.Sample(sampleType, input.tex);
+
+	clip(color == 0.0 ? -1 : 1);
+
+	color.a = 1.0f;
+	color = color * pixelColor;
+
+	return color;
+}
