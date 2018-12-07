@@ -27,7 +27,7 @@ Bitmap::~Bitmap()
 
 }
 
-bool Bitmap::Initialize(ID3D11Device* device, int scrnWidth, int scrnHeight, WCHAR* textureFilename, int bitmpWidth, int bitmpHeight)
+bool Bitmap::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int scrnWidth, int scrnHeight, char* textureFilename, int bitmpWidth, int bitmpHeight)
 {
 	bool result;
 
@@ -45,7 +45,7 @@ bool Bitmap::Initialize(ID3D11Device* device, int scrnWidth, int scrnHeight, WCH
 		return false;
 	}
 
-	result = LoadTexture(device, textureFilename);
+	result = LoadTexture(device, deviceContext, textureFilename);
 	if (!result)
 	{
 		return false;

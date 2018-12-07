@@ -18,7 +18,7 @@ public:
 	Bitmap(const Bitmap&);
 	~Bitmap();
 
-	bool Initialize(ID3D11Device*, int, int, WCHAR*, int, int);
+	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, int, int, char*, int, int);
 	void Shutdown();
 	bool Render(ID3D11DeviceContext*, int, int);
 
@@ -40,13 +40,8 @@ private:
 	bool UpdateBuffers(ID3D11DeviceContext*, int, int);
 	void RenderBuffers(ID3D11DeviceContext*);
 
-	bool LoadTexture(ID3D11Device*, WCHAR*);
 	void ReleaseTexture();
-
-	void ReadNormal(FbxMesh*, int, int, DirectX::XMFLOAT3&);
-
 	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, char*);
-	void ReleaseTexture();
 
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* indexBuffer;

@@ -14,6 +14,7 @@ class Model;
 class Bitmap;
 class DiffuseShader;
 class SpecularShader;
+class TextureShader;
 class Light;
 
 class Graphics
@@ -39,6 +40,7 @@ private:
 	Bitmap* bitmap;
 	Light* light;
 	SpecularShader* specularShader;
+	TextureShader* textureShader;
 
 };
 

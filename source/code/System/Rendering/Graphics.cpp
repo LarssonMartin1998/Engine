@@ -7,6 +7,7 @@
 #include "Light.h"
 #include "DiffuseShader.h"
 #include "SpecularShader.h"
+#include "TextureShader.h"
 
 Graphics::Graphics()
 : direct3D (nullptr)
@@ -15,6 +16,7 @@ Graphics::Graphics()
 , bitmap (nullptr)
 , light (nullptr)
 , specularShader (nullptr)
+, textureShader (nullptr)
 {
 
 }
@@ -53,8 +55,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 3.5f, -8.5f);
-	camera->SetRotation(20.0f, 0.0f, 0.0f);
+	camera->SetPosition(0.0f, 0.0f, -5.0f);
+	camera->SetRotation(0.0f, 0.0f, 0.0f);
 
 	model = new Model();
 	if (!model)
@@ -76,7 +78,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	result = bitmap->Initialize(direct3D->GetDevice(), screenWidth, screenHeight, L"textures/seafloor.dds", 256, 256);
+	result = bitmap->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), screenWidth, screenHeight, "textures/stone01.tga", 256, 256);
 	if (!result)
 	{
 		MessageBox(hwnd, "Could not initialize the bitmap object.", "Error", MB_OK);
@@ -119,6 +121,19 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!result)
 	{
 		MessageBox(hwnd, "Could not initialize the specular shader object.", "Error", MB_OK);
+		return false;
+	}
+
+	textureShader = new TextureShader();
+	if (!textureShader)
+	{
+		return false;
+	}
+
+	result = textureShader->Initialize(direct3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, "Could not initialize the texture shader object.", "Error", MB_OK);
 		return false;
 	}
 
@@ -166,6 +181,13 @@ void Graphics::Shutdown()
 		delete specularShader;
 		specularShader = nullptr;
 	}
+
+	if (textureShader)
+	{
+		textureShader->Shutdown();
+		delete textureShader;
+		textureShader = nullptr;
+	}
 }
 
 bool Graphics::Frame()
@@ -207,7 +229,13 @@ bool Graphics::Render(float rotation)
 
 	direct3D->TurnOffZbuffer();
 
-	result = bitmap->Render(direct3D->GetDeviceContext(), 100, 100);
+	result = bitmap->Render(direct3D->GetDeviceContext(), (1024 / 2) - (256 / 2), (768 / 2) - (256 / 2));
+	if (!result)
+	{
+		return false;
+	}
+
+	result = textureShader->Render(direct3D->GetDeviceContext(), bitmap->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, bitmap->GetTexture());
 	if (!result)
 	{
 		return false;
