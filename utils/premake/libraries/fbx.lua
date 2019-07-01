@@ -5,6 +5,9 @@ filter {}
 	links {
 		"libfbxsdk"
 	}
+	defines {
+		"FBXSDK_SHARED"
+	}
 
 filter { "platforms:x86", "configurations:Debug" }
 
