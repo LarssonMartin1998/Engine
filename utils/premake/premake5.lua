@@ -5,6 +5,7 @@ local modules = require "modules"
 solution(PRODUCT_NAME)
 	location "../../Source/"
 	startproject(PRODUCT_NAME)
+	systemversion "latest"
 	platforms {
 		"x86",
 		"x64"
@@ -30,7 +31,7 @@ project(PRODUCT_NAME)
 	characterset "MBCS"
 	files { "../../Source/Code/main.cpp" }
 	targetname "%{prj.name}_%{cfg.platform}_%{cfg.buildcfg}"
-	
+
 	warnings "Extra"
 	editandcontinue "Off"
 
@@ -85,7 +86,7 @@ project(PRODUCT_NAME)
 		flags {
 			"NoMinimalRebuild",
 		}
-		
+
 		vectorextensions "SSE2"
 
 	filter { "platforms:x86", "configurations:not Debug" }
