@@ -10,6 +10,8 @@ D3D::D3D()
 , depthStencilView(nullptr)
 , rasterState(nullptr)
 , depthStencilStateDisabled(nullptr)
+, alphaDisabledBlendState(nullptr)
+, alphaEnabledBlendState(nullptr)
 {
 
 }
@@ -383,6 +385,33 @@ bool D3D::Initialize(int screenWidth, int screenHeight, bool vSync, HWND hwnd, b
 		return false;
 	}
 
+	D3D11_BLEND_DESC blendStateDescription;
+
+	ZeroMemory(&blendStateDescription, sizeof(D3D11_BLEND_DESC));
+
+	blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
+	blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+
+	result = device->CreateBlendState(&blendStateDescription, &alphaEnabledBlendState);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
+	blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
+
+	result = device->CreateBlendState(&blendStateDescription, &alphaDisabledBlendState);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -447,6 +476,18 @@ void D3D::Shutdown()
 		depthStencilStateDisabled->Release();
 		depthStencilStateDisabled = nullptr;
 	}
+
+	if (alphaDisabledBlendState)
+	{
+		alphaDisabledBlendState->Release();
+		alphaDisabledBlendState = nullptr;
+	}
+
+	if (alphaEnabledBlendState)
+	{
+		alphaEnabledBlendState->Release();
+		alphaEnabledBlendState = nullptr;
+	}
 }
 
 void D3D::BeginScene(float red, float green, float blue, float alpha)
@@ -494,4 +535,28 @@ void D3D::TurnOnZbuffer()
 void D3D::TurnOffZbuffer()
 {
 	deviceContext->OMSetDepthStencilState(depthStencilStateDisabled, 1);
+}
+
+void D3D::TurnOnAlphaBlending()
+{
+	float blendFactor[4];
+
+	blendFactor[0] = 0.0f;
+	blendFactor[1] = 0.0f;
+	blendFactor[2] = 0.0f;
+	blendFactor[3] = 0.0f;
+
+	deviceContext->OMSetBlendState(alphaEnabledBlendState, blendFactor, 0xffffffff);
+}
+
+void D3D::TurnOffAlphaBlending()
+{
+	float blendFactor[4];
+
+	blendFactor[0] = 0.0f;
+	blendFactor[1] = 0.0f;
+	blendFactor[2] = 0.0f;
+	blendFactor[3] = 0.0f;
+
+	deviceContext->OMSetBlendState(alphaDisabledBlendState, blendFactor, 0xffffffff);
 }

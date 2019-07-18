@@ -52,6 +52,9 @@ public:
 	void TurnOnZbuffer();
 	void TurnOffZbuffer();
 
+	void TurnOnAlphaBlending();
+	void TurnOffAlphaBlending();
+
 	void GetVideoCardInfo(char*, int&);
 
 private:
@@ -72,6 +75,9 @@ private:
 	DirectX::XMMATRIX orthographicMatrix;
 
 	ID3D11DepthStencilState* depthStencilStateDisabled;
+
+	ID3D11BlendState* alphaEnabledBlendState;
+	ID3D11BlendState* alphaDisabledBlendState;
 };
 
 #endif

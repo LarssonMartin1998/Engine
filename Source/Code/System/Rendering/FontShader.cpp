@@ -183,10 +183,10 @@ bool FontShader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFile
 	D3D11_BUFFER_DESC pixelBufferDesc;
 	pixelBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	pixelBufferDesc.ByteWidth = sizeof(PixelBufferType);
-	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	matrixBufferDesc.MiscFlags = 0;
-	matrixBufferDesc.StructureByteStride = 0;
+	pixelBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	pixelBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	pixelBufferDesc.MiscFlags = 0;
+	pixelBufferDesc.StructureByteStride = 0;
 
 	result = device->CreateBuffer(&pixelBufferDesc, NULL, &pixelBuffer);
 	if (FAILED(result))

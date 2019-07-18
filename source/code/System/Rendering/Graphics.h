@@ -16,6 +16,7 @@ class DiffuseShader;
 class SpecularShader;
 class TextureShader;
 class Light;
+class Text;
 
 class Graphics
 {
@@ -41,6 +42,7 @@ private:
 	Light* light;
 	SpecularShader* specularShader;
 	TextureShader* textureShader;
+	Text* text;
 
 };
 

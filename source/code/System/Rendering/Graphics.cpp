@@ -8,6 +8,7 @@
 #include "DiffuseShader.h"
 #include "SpecularShader.h"
 #include "TextureShader.h"
+#include "Text.h"
 
 Graphics::Graphics()
 : direct3D (nullptr)
@@ -17,6 +18,7 @@ Graphics::Graphics()
 , light (nullptr)
 , specularShader (nullptr)
 , textureShader (nullptr)
+, text (nullptr)
 {
 
 }
@@ -54,18 +56,17 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 3.0f, -12.5f);
-	camera->SetRotation(0.0f, 0.0f, 0.0f);
-
 	model = new Model();
 	if (!model)
 	{
 		return false;
 	}
 	
-	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/bell.fbx", "textures/stone01.tga");
-	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/cube.txt", "textures/stone01.tga");
+	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/box.fbx", "textures/stone01.tga");
+	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/suzanne.fbx", "textures/stone01.tga");
+	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/bell.fbx", "textures/stone01.tga");
+	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/cube.txt", "textures/stone01.tga");
+
 	if (!result)
 	{
 		MessageBox(hwnd, "Could not initialize the model object.", "Error", MB_OK);
@@ -137,6 +138,30 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	// Get a origo constant view matrix which will be used for text.
+
+	DirectX::XMMATRIX baseViewMatrix;
+	camera->SetPosition(0.0f, 0.0f, -1.0f);
+	camera->SetRotation(0.0f, 0.0f, 0.0f);
+	camera->Render();
+	camera->GetViewMatrix(baseViewMatrix);
+
+	text = new Text();
+	if (!text)
+	{
+		return false;
+	}
+
+	result = text->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), hwnd, screenWidth, screenHeight, baseViewMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Set the initial position of the camera.
+	camera->SetPosition(0.0f, 2.5f, -12.0f);
+	camera->SetRotation(0.0f, 0.0f, 0.0f);
+
 	return true;
 }
 
@@ -188,6 +213,13 @@ void Graphics::Shutdown()
 		delete textureShader;
 		textureShader = nullptr;
 	}
+
+	if (text)
+	{
+		text->Shutdown();
+		delete text;
+		text = nullptr;
+	}
 }
 
 bool Graphics::Frame()
@@ -227,63 +259,80 @@ bool Graphics::Render(float rotation)
 	direct3D->GetProjectionMatri(projectionMatrix);
 	direct3D->GetOrthographicMatrix(orthoMatrix);
 
-	direct3D->TurnOffZbuffer();
-
-	result = bitmap->Render(direct3D->GetDeviceContext(), 20, 20);
-	if (!result)
+	// 2D rendering
 	{
-		return false;
+		direct3D->TurnOffZbuffer();
+
+		// Alhpa rendering
+		{
+			direct3D->TurnOnAlphaBlending();
+
+			result = text->Render(direct3D->GetDeviceContext(), worldMatrix, orthoMatrix);
+			if (!result)
+			{
+				return false;
+			}
+
+			direct3D->TurnOffAlphaBlending();
+		}
+
+
+		result = bitmap->Render(direct3D->GetDeviceContext(), 20, 20);
+		if (!result)
+		{
+			return false;
+		}
+
+		result = textureShader->Render(direct3D->GetDeviceContext(), bitmap->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, bitmap->GetTexture());
+		if (!result)
+		{
+			return false;
+		}
+
+		///////////////////////////////////
+
+		result = bitmap->Render(direct3D->GetDeviceContext(), 1024 - 128 - 20, 768 - 128 - 20);
+		if (!result)
+		{
+			return false;
+		}
+
+		result = textureShader->Render(direct3D->GetDeviceContext(), bitmap->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, bitmap->GetTexture());
+		if (!result)
+		{
+			return false;
+		}
+
+		///////////////////////////////////
+
+		result = bitmap->Render(direct3D->GetDeviceContext(), 20, 768 - 128 - 20);
+		if (!result)
+		{
+			return false;
+		}
+
+		result = textureShader->Render(direct3D->GetDeviceContext(), bitmap->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, bitmap->GetTexture());
+		if (!result)
+		{
+			return false;
+		}
+
+		///////////////////////////////////
+
+		result = bitmap->Render(direct3D->GetDeviceContext(), 1024 - 128 - 20, 20);
+		if (!result)
+		{
+			return false;
+		}
+
+		result = textureShader->Render(direct3D->GetDeviceContext(), bitmap->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, bitmap->GetTexture());
+		if (!result)
+		{
+			return false;
+		}
+
+		direct3D->TurnOnZbuffer();
 	}
-
-	result = textureShader->Render(direct3D->GetDeviceContext(), bitmap->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, bitmap->GetTexture());
-	if (!result)
-	{
-		return false;
-	}
-
-	///////////////////////////////////
-
-	result = bitmap->Render(direct3D->GetDeviceContext(), 1024 - 128 - 20, 768 - 128 - 20);
-	if (!result)
-	{
-		return false;
-	}
-
-	result = textureShader->Render(direct3D->GetDeviceContext(), bitmap->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, bitmap->GetTexture());
-	if (!result)
-	{
-		return false;
-	}
-
-	///////////////////////////////////
-
-	result = bitmap->Render(direct3D->GetDeviceContext(), 20, 768 - 128 - 20);
-	if (!result)
-	{
-		return false;
-	}
-
-	result = textureShader->Render(direct3D->GetDeviceContext(), bitmap->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, bitmap->GetTexture());
-	if (!result)
-	{
-		return false;
-	}
-
-	///////////////////////////////////
-
-	result = bitmap->Render(direct3D->GetDeviceContext(), 1024 - 128 - 20, 20);
-	if (!result)
-	{
-		return false;
-	}
-
-	result = textureShader->Render(direct3D->GetDeviceContext(), bitmap->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, bitmap->GetTexture());
-	if (!result)
-	{
-		return false;
-	}
-
-	direct3D->TurnOnZbuffer();
 
 	worldMatrix *= DirectX::XMMatrixRotationY(rotation);
 

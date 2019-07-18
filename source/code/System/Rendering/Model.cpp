@@ -8,13 +8,14 @@
 #include "FileSystem/FileSystem.h"
 #include "Fbx/FbxHelper.h"
 #include "fbxsdk/scene/fbxaxissystem.h"
+#include "fbxsdk/core/fbxsystemunit.h"
 
 Model::Model()
-: vertexBuffer(nullptr)
-, indexBuffer(nullptr)
-, texture (nullptr)
+	: vertexBuffer(nullptr)
+	, indexBuffer(nullptr)
+	, texture(nullptr)
 {
-	
+
 }
 
 Model::Model(const Model& /*model*/)
@@ -31,16 +32,16 @@ bool Model::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
 {
 	bool result;
 
-	result = LoadModel(modelFilename);
-	if (!result)
-	{
-		return false;
-	}
-	/*result = LoadFbx(modelFilename);
+	/*result = LoadModel(modelFilename);
 	if (!result)
 	{
 		return false;
 	}*/
+	result = LoadFbx(modelFilename);
+	if (!result)
+	{
+		return false;
+	}
 
 	result = InitializeBuffers(device);
 	if (!result)
@@ -257,21 +258,28 @@ bool Model::LoadFbx(char* filename)
 	// Importer has imported the scene, it's safe to destroy.
 	importer->Destroy();
 
-	// Convert the scene to left handed suited for DirectX
-	fbxHelper->ConvertSceneToLeftHandAndMeters(fbxScene);
+	FbxGlobalSettings& sceneGlobalSettings = fbxScene->GetGlobalSettings();
+
+	FbxAxisSystem::ECoordSystem engineCoordSystem = FbxAxisSystem::eLeftHanded;
+	FbxAxisSystem::EUpVector engineUpVector = FbxAxisSystem::EUpVector::eYAxis;
+	FbxAxisSystem::EFrontVector engineForwardVector = (FbxAxisSystem::EFrontVector) - FbxAxisSystem::eParityOdd;
+
+	FbxAxisSystem engineAxisSystem(engineUpVector, engineForwardVector, engineCoordSystem);
+
+	if (engineAxisSystem != sceneGlobalSettings.GetAxisSystem())
+	{
+		engineAxisSystem.ConvertScene(fbxScene);
+	}
+
+	if (FbxSystemUnit::m != sceneGlobalSettings.GetSystemUnit())
+	{
+		FbxSystemUnit::m.ConvertScene(fbxScene);
+	}
 
 	FbxNode* fbxRootNode = fbxScene->GetRootNode();
 
 	vertexCount = 0;
 	indexCount = 0;
-
-	int upDir;
-	fbxScene->GetGlobalSettings().GetAxisSystem().GetUpVector(upDir);
-	int frontDir;
-	fbxScene->GetGlobalSettings().GetAxisSystem().GetFrontVector(frontDir);
-
-	FbxAxisSystem directX;
-	directX.ConvertScene(fbxScene);
 
 	if (fbxRootNode)
 	{
@@ -280,7 +288,7 @@ bool Model::LoadFbx(char* filename)
 			FbxNode* fbxChildNode = fbxRootNode->GetChild(i);
 			FbxNodeAttribute* nodeAttribute = fbxChildNode->GetNodeAttribute();
 
-			if(nodeAttribute == NULL)
+			if (nodeAttribute == NULL)
 			{
 				continue;
 			}
@@ -290,8 +298,8 @@ bool Model::LoadFbx(char* filename)
 				continue;
 			}
 
-			FbxMesh* mesh = static_cast<FbxMesh*>(nodeAttribute);
-			FbxVector4* vertexArray = mesh->GetControlPoints();
+			FbxMesh* mesh = fbxChildNode->GetMesh();
+			int vertexCount = mesh->GetPolygonCount();
 
 			for (int j = 0; j < mesh->GetPolygonCount(); j++)
 			{
@@ -303,9 +311,9 @@ bool Model::LoadFbx(char* filename)
 
 					ModelData md;
 
-					md.position.x = (float)vertexArray[controlPointIndex].mData[0];
-					md.position.y = (float)vertexArray[controlPointIndex].mData[1];
-					md.position.z = (float)vertexArray[controlPointIndex].mData[2];
+					md.position.x = static_cast<float>(vertexArray[controlPointIndex].mData[0]);
+					md.position.y = static_cast<float>(vertexArray[controlPointIndex].mData[1]);
+					md.position.z = static_cast<float>(vertexArray[controlPointIndex].mData[2]);
 
 					ReadNormal(mesh, controlPointIndex, vertexCount, md.normal);
 
@@ -319,6 +327,24 @@ bool Model::LoadFbx(char* filename)
 					vertexCount++;
 				}
 			}
+
+			// Convert from right to left hand
+			//if (sceneGlobalSettings.GetAxisSystem().GetCoorSystem() == FbxAxisSystem::eRightHanded)
+			//{
+			//	for (ModelData& md : modelData)
+			//	{
+			//		float temp = md.position.y;
+
+			//		md.position.y = md.position.z;
+			//		md.position.z = temp;
+
+			//		md.position.z *= -1.0f;
+			//		md.normal.z *= -1.0f;
+			//		md.uv.y = 1.0f - md.uv.y;
+			//	}
+			//}
+
+
 		}
 
 		indexCount = vertexCount;
@@ -390,18 +416,24 @@ void Model::ReadNormal(FbxMesh* mesh, int ctrlPointIndex, int vertexCounter, Dir
 		throw std::exception("vertexNormal is nullptr");
 	}
 
-	if (vertexNormal->GetMappingMode() == FbxGeometryElementNormal::eByControlPoint)
-	{
-		int normalIndex = 0;
+	FbxLayerElement::EMappingMode normalMappingMode = vertexNormal->GetMappingMode();
+	FbxLayerElement::EReferenceMode normalReferenceNode = vertexNormal->GetReferenceMode();
+	int normalIndex = 0;
 
-		if (vertexNormal->GetReferenceMode() == FbxGeometryElement::eDirect)
+	// When each vertex only have one normal
+	if (normalMappingMode == FbxGeometryElementNormal::eByControlPoint)
+	{
+		if (normalReferenceNode == FbxGeometryElement::eDirect)
 		{
 			normalIndex = ctrlPointIndex;
 		}
-
-		if (vertexNormal->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
+		else if (normalReferenceNode == FbxGeometryElement::eIndexToDirect)
 		{
 			normalIndex = vertexNormal->GetIndexArray().GetAt(ctrlPointIndex);
+		}
+		else
+		{
+			throw std::exception("Invalid Reference");
 		}
 
 		FbxVector4 normal = vertexNormal->GetDirectArray().GetAt(normalIndex);
@@ -409,18 +441,20 @@ void Model::ReadNormal(FbxMesh* mesh, int ctrlPointIndex, int vertexCounter, Dir
 		outNormal.y = static_cast<float>(normal.mData[1]);
 		outNormal.z = static_cast<float>(normal.mData[2]);
 	}
-	else if (vertexNormal->GetMappingMode() == FbxGeometryElement::eByPolygonVertex)
+	// When you need go get the normals of the sorrounding faces.
+	else if (normalMappingMode == FbxGeometryElement::eByPolygonVertex)
 	{
-		int normalIndex = 0;
-
-		if (vertexNormal->GetReferenceMode() == FbxGeometryElement::eDirect)
+		if (normalReferenceNode == FbxGeometryElement::eDirect)
 		{
 			normalIndex = vertexCounter;
 		}
-
-		if (vertexNormal->GetReferenceMode() == FbxGeometryElement::eIndexToDirect)
+		else if (normalReferenceNode == FbxGeometryElement::eIndexToDirect)
 		{
 			normalIndex = vertexNormal->GetIndexArray().GetAt(vertexCounter);
+		}
+		else
+		{
+			throw std::exception("Invalid Reference");
 		}
 
 		FbxVector4 normal = vertexNormal->GetDirectArray().GetAt(normalIndex);
