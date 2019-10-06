@@ -32,16 +32,16 @@ bool Model::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
 {
 	bool result;
 
-	/*result = LoadModel(modelFilename);
-	if (!result)
-	{
-		return false;
-	}*/
-	result = LoadFbx(modelFilename);
+	result = LoadModel(modelFilename);
 	if (!result)
 	{
 		return false;
 	}
+	/*result = LoadFbx(modelFilename);
+	if (!result)
+	{
+		return false;
+	}*/
 
 	result = InitializeBuffers(device);
 	if (!result)
@@ -234,121 +234,105 @@ void Model::ReleaseTexture()
 
 bool Model::LoadFbx(char* filename)
 {
-	Application* app = Application::GetInstance();
+	//Application* app = Application::GetInstance();
 
-	FbxHelper* fbxHelper = app->GetFbxHelper();
-	FbxManager* fbxManager = fbxHelper->GetFbxManager();
-	FbxIOSettings* IOSettings = fbxManager->GetIOSettings();
-	FbxScene* fbxScene = FbxScene::Create(fbxManager, "");
-	FbxImporter* importer = FbxImporter::Create(fbxManager, "");
+	//FbxHelper* fbxHelper = app->GetFbxHelper();
+	//FbxManager* fbxManager = fbxHelper->GetFbxManager();
+	//FbxIOSettings* IOSettings = fbxManager->GetIOSettings();
+	//FbxScene* fbxScene = FbxScene::Create(fbxManager, "");
+	//FbxImporter* importer = FbxImporter::Create(fbxManager, "");
 
-	std::string filepath = app->GetFileSystem()->GetCorrectPath(filename);
-	bool result = importer->Initialize(filepath.c_str(), -1, IOSettings);
-	if (!result)
-	{
-		return false;
-	}
+	//std::string filepath = app->GetFileSystem()->GetCorrectPath(filename);
+	//bool result = importer->Initialize(filepath.c_str(), -1, IOSettings);
+	//if (!result)
+	//{
+	//	return false;
+	//}
 
-	result = importer->Import(fbxScene);
-	if (!result)
-	{
-		return false;
-	}
+	//result = importer->Import(fbxScene);
+	//if (!result)
+	//{
+	//	return false;
+	//}
 
-	// Importer has imported the scene, it's safe to destroy.
-	importer->Destroy();
+	//// Importer has imported the scene, it's safe to destroy.
+	//importer->Destroy();
 
-	FbxGlobalSettings& sceneGlobalSettings = fbxScene->GetGlobalSettings();
+	//FbxGlobalSettings& sceneGlobalSettings = fbxScene->GetGlobalSettings();
 
-	FbxAxisSystem::ECoordSystem engineCoordSystem = FbxAxisSystem::eLeftHanded;
-	FbxAxisSystem::EUpVector engineUpVector = FbxAxisSystem::EUpVector::eYAxis;
-	FbxAxisSystem::EFrontVector engineForwardVector = (FbxAxisSystem::EFrontVector) - FbxAxisSystem::eParityOdd;
+	//FbxAxisSystem::ECoordSystem engineCoordSystem = FbxAxisSystem::eLeftHanded;
+	//FbxAxisSystem::EUpVector engineUpVector = FbxAxisSystem::EUpVector::eYAxis;
+	//FbxAxisSystem::EFrontVector engineForwardVector = (FbxAxisSystem::EFrontVector) - FbxAxisSystem::eParityOdd;
 
-	FbxAxisSystem engineAxisSystem(engineUpVector, engineForwardVector, engineCoordSystem);
+	//FbxAxisSystem engineAxisSystem(engineUpVector, engineForwardVector, engineCoordSystem);
 
-	if (engineAxisSystem != sceneGlobalSettings.GetAxisSystem())
-	{
-		engineAxisSystem.ConvertScene(fbxScene);
-	}
+	//if (engineAxisSystem != sceneGlobalSettings.GetAxisSystem())
+	//{
+	//	engineAxisSystem.ConvertScene(fbxScene);
+	//}
 
-	if (FbxSystemUnit::m != sceneGlobalSettings.GetSystemUnit())
-	{
-		FbxSystemUnit::m.ConvertScene(fbxScene);
-	}
+	//if (FbxSystemUnit::m != sceneGlobalSettings.GetSystemUnit())
+	//{
+	//	FbxSystemUnit::m.ConvertScene(fbxScene);
+	//}
 
-	FbxNode* fbxRootNode = fbxScene->GetRootNode();
+	//FbxNode* fbxRootNode = fbxScene->GetRootNode();
 
-	vertexCount = 0;
-	indexCount = 0;
+	//vertexCount = 0;
+	//indexCount = 0;
 
-	if (fbxRootNode)
-	{
-		for (int i = 0; i < fbxRootNode->GetChildCount(); i++)
-		{
-			FbxNode* fbxChildNode = fbxRootNode->GetChild(i);
-			FbxNodeAttribute* nodeAttribute = fbxChildNode->GetNodeAttribute();
+	//if (fbxRootNode)
+	//{
+	//	for (int i = 0; i < fbxRootNode->GetChildCount(); i++)
+	//	{
+	//		FbxNode* fbxChildNode = fbxRootNode->GetChild(i);
+	//		FbxNodeAttribute* nodeAttribute = fbxChildNode->GetNodeAttribute();
 
-			if (nodeAttribute == NULL)
-			{
-				continue;
-			}
+	//		if (nodeAttribute == NULL)
+	//		{
+	//			continue;
+	//		}
 
-			if (nodeAttribute->GetAttributeType() != FbxNodeAttribute::eMesh)
-			{
-				continue;
-			}
+	//		if (nodeAttribute->GetAttributeType() != FbxNodeAttribute::eMesh)
+	//		{
+	//			continue;
+	//		}
 
-			FbxMesh* mesh = fbxChildNode->GetMesh();
-			int vertexCount = mesh->GetPolygonCount();
+	//		FbxMesh* mesh = fbxChildNode->GetMesh();
+	//		int vertexCount = mesh->GetPolygonCount();
 
-			for (int j = 0; j < mesh->GetPolygonCount(); j++)
-			{
-				int numVertices = mesh->GetPolygonSize(j);
+	//		for (int j = 0; j < mesh->GetPolygonCount(); j++)
+	//		{
+	//			int numVertices = mesh->GetPolygonSize(j);
 
-				for (int k = 0; k < numVertices; k++)
-				{
-					int controlPointIndex = mesh->GetPolygonVertex(j, k);
+	//			for (int k = 0; k < numVertices; k++)
+	//			{
+	//				int controlPointIndex = mesh->GetPolygonVertex(j, k);
 
-					ModelData md;
+	//				ModelData md;
 
-					md.position.x = static_cast<float>(vertexArray[controlPointIndex].mData[0]);
-					md.position.y = static_cast<float>(vertexArray[controlPointIndex].mData[1]);
-					md.position.z = static_cast<float>(vertexArray[controlPointIndex].mData[2]);
+	//				md.position.x = static_cast<float>(vertexArray[controlPointIndex].mData[0]);
+	//				md.position.y = static_cast<float>(vertexArray[controlPointIndex].mData[1]);
+	//				md.position.z = static_cast<float>(vertexArray[controlPointIndex].mData[2]);
 
-					ReadNormal(mesh, controlPointIndex, vertexCount, md.normal);
+	//				ReadNormal(mesh, controlPointIndex, vertexCount, md.normal);
 
-					// Todo: Fix UV's
-					// Temporary
-					md.uv.x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-					md.uv.y = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-					// Temporary
+	//				// Todo: Fix UV's
+	//				// Temporary
+	//				md.uv.x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+	//				md.uv.y = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+	//				// Temporary
 
-					modelData.push_back(md);
-					vertexCount++;
-				}
-			}
-
-			// Convert from right to left hand
-			//if (sceneGlobalSettings.GetAxisSystem().GetCoorSystem() == FbxAxisSystem::eRightHanded)
-			//{
-			//	for (ModelData& md : modelData)
-			//	{
-			//		float temp = md.position.y;
-
-			//		md.position.y = md.position.z;
-			//		md.position.z = temp;
-
-			//		md.position.z *= -1.0f;
-			//		md.normal.z *= -1.0f;
-			//		md.uv.y = 1.0f - md.uv.y;
-			//	}
-			//}
+	//				modelData.push_back(md);
+	//				vertexCount++;
+	//			}
+	//		}
 
 
-		}
+	//	}
 
-		indexCount = vertexCount;
-	}
+	//	indexCount = vertexCount;
+	//}
 
 	return true;
 }

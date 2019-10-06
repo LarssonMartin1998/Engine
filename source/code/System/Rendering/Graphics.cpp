@@ -64,7 +64,7 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	
 	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/box.fbx", "textures/stone01.tga");
 	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/suzanne.fbx", "textures/stone01.tga");
-	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/bell.fbx", "textures/stone01.tga");
+	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/cube.txt", "textures/stone01.tga");
 	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/cube.txt", "textures/stone01.tga");
 
 	if (!result)
