@@ -6,9 +6,6 @@
 #include "Texture.h"
 #include "Application.h"
 #include "FileSystem/FileSystem.h"
-#include "Fbx/FbxHelper.h"
-#include "fbxsdk/scene/fbxaxissystem.h"
-#include "fbxsdk/core/fbxsystemunit.h"
 
 Model::Model()
 	: vertexBuffer(nullptr)
@@ -37,11 +34,6 @@ bool Model::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext,
 	{
 		return false;
 	}
-	/*result = LoadFbx(modelFilename);
-	if (!result)
-	{
-		return false;
-	}*/
 
 	result = InitializeBuffers(device);
 	if (!result)
@@ -232,111 +224,6 @@ void Model::ReleaseTexture()
 }
 
 
-bool Model::LoadFbx(char* filename)
-{
-	//Application* app = Application::GetInstance();
-
-	//FbxHelper* fbxHelper = app->GetFbxHelper();
-	//FbxManager* fbxManager = fbxHelper->GetFbxManager();
-	//FbxIOSettings* IOSettings = fbxManager->GetIOSettings();
-	//FbxScene* fbxScene = FbxScene::Create(fbxManager, "");
-	//FbxImporter* importer = FbxImporter::Create(fbxManager, "");
-
-	//std::string filepath = app->GetFileSystem()->GetCorrectPath(filename);
-	//bool result = importer->Initialize(filepath.c_str(), -1, IOSettings);
-	//if (!result)
-	//{
-	//	return false;
-	//}
-
-	//result = importer->Import(fbxScene);
-	//if (!result)
-	//{
-	//	return false;
-	//}
-
-	//// Importer has imported the scene, it's safe to destroy.
-	//importer->Destroy();
-
-	//FbxGlobalSettings& sceneGlobalSettings = fbxScene->GetGlobalSettings();
-
-	//FbxAxisSystem::ECoordSystem engineCoordSystem = FbxAxisSystem::eLeftHanded;
-	//FbxAxisSystem::EUpVector engineUpVector = FbxAxisSystem::EUpVector::eYAxis;
-	//FbxAxisSystem::EFrontVector engineForwardVector = (FbxAxisSystem::EFrontVector) - FbxAxisSystem::eParityOdd;
-
-	//FbxAxisSystem engineAxisSystem(engineUpVector, engineForwardVector, engineCoordSystem);
-
-	//if (engineAxisSystem != sceneGlobalSettings.GetAxisSystem())
-	//{
-	//	engineAxisSystem.ConvertScene(fbxScene);
-	//}
-
-	//if (FbxSystemUnit::m != sceneGlobalSettings.GetSystemUnit())
-	//{
-	//	FbxSystemUnit::m.ConvertScene(fbxScene);
-	//}
-
-	//FbxNode* fbxRootNode = fbxScene->GetRootNode();
-
-	//vertexCount = 0;
-	//indexCount = 0;
-
-	//if (fbxRootNode)
-	//{
-	//	for (int i = 0; i < fbxRootNode->GetChildCount(); i++)
-	//	{
-	//		FbxNode* fbxChildNode = fbxRootNode->GetChild(i);
-	//		FbxNodeAttribute* nodeAttribute = fbxChildNode->GetNodeAttribute();
-
-	//		if (nodeAttribute == NULL)
-	//		{
-	//			continue;
-	//		}
-
-	//		if (nodeAttribute->GetAttributeType() != FbxNodeAttribute::eMesh)
-	//		{
-	//			continue;
-	//		}
-
-	//		FbxMesh* mesh = fbxChildNode->GetMesh();
-	//		int vertexCount = mesh->GetPolygonCount();
-
-	//		for (int j = 0; j < mesh->GetPolygonCount(); j++)
-	//		{
-	//			int numVertices = mesh->GetPolygonSize(j);
-
-	//			for (int k = 0; k < numVertices; k++)
-	//			{
-	//				int controlPointIndex = mesh->GetPolygonVertex(j, k);
-
-	//				ModelData md;
-
-	//				md.position.x = static_cast<float>(vertexArray[controlPointIndex].mData[0]);
-	//				md.position.y = static_cast<float>(vertexArray[controlPointIndex].mData[1]);
-	//				md.position.z = static_cast<float>(vertexArray[controlPointIndex].mData[2]);
-
-	//				ReadNormal(mesh, controlPointIndex, vertexCount, md.normal);
-
-	//				// Todo: Fix UV's
-	//				// Temporary
-	//				md.uv.x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	//				md.uv.y = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	//				// Temporary
-
-	//				modelData.push_back(md);
-	//				vertexCount++;
-	//			}
-	//		}
-
-
-	//	}
-
-	//	indexCount = vertexCount;
-	//}
-
-	return true;
-}
-
 bool Model::LoadModel(char* filename)
 {
 	std::ifstream stream = Application::GetInstance()->GetFileSystem()->LoadFileToStream(filename);
@@ -385,65 +272,4 @@ ID3D11ShaderResourceView* Model::GetTexture()
 void Model::ReleaseModel()
 {
 
-}
-
-void Model::ReadNormal(FbxMesh* mesh, int ctrlPointIndex, int vertexCounter, DirectX::XMFLOAT3& outNormal)
-{
-	if (mesh->GetElementNormalCount() < 1)
-	{
-		throw std::exception("Invalid Normal Number");
-	}
-
-	FbxGeometryElementNormal* vertexNormal = mesh->GetElementNormal();
-	if (!vertexNormal)
-	{
-		throw std::exception("vertexNormal is nullptr");
-	}
-
-	FbxLayerElement::EMappingMode normalMappingMode = vertexNormal->GetMappingMode();
-	FbxLayerElement::EReferenceMode normalReferenceNode = vertexNormal->GetReferenceMode();
-	int normalIndex = 0;
-
-	// When each vertex only have one normal
-	if (normalMappingMode == FbxGeometryElementNormal::eByControlPoint)
-	{
-		if (normalReferenceNode == FbxGeometryElement::eDirect)
-		{
-			normalIndex = ctrlPointIndex;
-		}
-		else if (normalReferenceNode == FbxGeometryElement::eIndexToDirect)
-		{
-			normalIndex = vertexNormal->GetIndexArray().GetAt(ctrlPointIndex);
-		}
-		else
-		{
-			throw std::exception("Invalid Reference");
-		}
-
-		FbxVector4 normal = vertexNormal->GetDirectArray().GetAt(normalIndex);
-		outNormal.x = static_cast<float>(normal.mData[0]);
-		outNormal.y = static_cast<float>(normal.mData[1]);
-		outNormal.z = static_cast<float>(normal.mData[2]);
-	}
-	// When you need go get the normals of the sorrounding faces.
-	else if (normalMappingMode == FbxGeometryElement::eByPolygonVertex)
-	{
-		if (normalReferenceNode == FbxGeometryElement::eDirect)
-		{
-			normalIndex = vertexCounter;
-		}
-		else if (normalReferenceNode == FbxGeometryElement::eIndexToDirect)
-		{
-			normalIndex = vertexNormal->GetIndexArray().GetAt(vertexCounter);
-		}
-		else
-		{
-			throw std::exception("Invalid Reference");
-		}
-
-		FbxVector4 normal = vertexNormal->GetDirectArray().GetAt(normalIndex);
-		outNormal.x = static_cast<float>(normal.mData[0]);
-		outNormal.y = static_cast<float>(normal.mData[1]);
-		outNormal.z = static_cast<float>(normal.mData[2]);
-	}
 }

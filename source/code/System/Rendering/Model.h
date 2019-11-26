@@ -2,7 +2,6 @@
 #ifndef _MODEL_H_
 #define _MODEL_H_
 
-#include "fbxsdk.h"
 #include <directxmath.h>
 #include <vector>
 
@@ -49,11 +48,8 @@ private:
 	void ReleaseBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
 
-	bool LoadFbx(char*);
 	bool LoadModel(char*);
 	void ReleaseModel();
-
-	void ReadNormal(FbxMesh*, int, int, DirectX::XMFLOAT3&);
 
 	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, char*);
 	void ReleaseTexture();

@@ -2,7 +2,6 @@
 
 #include "Input.h"
 #include "Rendering/Graphics.h"
-#include "Fbx/FbxHelper.h"
 #include "FileSystem/FileSystem.h"
 
 Application* Application::instance = nullptr;
@@ -10,7 +9,6 @@ Application* Application::instance = nullptr;
 Application::Application()
 : graphics (nullptr)
 , input (nullptr)
-, fbxHelper (nullptr)
 , fileSystem (nullptr)
 {
 
@@ -88,18 +86,6 @@ bool Application::InitializeEngine()
 	bool result;
 
 	InitializeWindows(screenWidth, screenHeight);
-
-	fbxHelper = new FbxHelper();
-	if (!fbxHelper)
-	{
-		return false;
-	}
-
-	result = fbxHelper->Initialize();
-	if (!result)
-	{
-		return false;
-	}
 
 	fileSystem = new FileSystem();
 	if (!fileSystem)
@@ -191,13 +177,6 @@ void Application::ShutdownEngine()
 		graphics->Shutdown();
 		delete graphics;
 		graphics = nullptr;
-	}
-
-	if (fbxHelper)
-	{
-		fbxHelper->Shutdown();
-		delete fbxHelper;
-		fbxHelper = nullptr;
 	}
 
 	if (fileSystem)

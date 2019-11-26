@@ -8,7 +8,6 @@
 
 class Input;
 class Graphics;
-class FbxHelper;
 class FileSystem;
 
 static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -25,7 +24,6 @@ public:
 	void ShutdownEngine();
 	void Run();
 
-	FbxHelper* GetFbxHelper() { return fbxHelper; }
 	FileSystem* GetFileSystem() { return fileSystem; }
 
 	LRESULT CALLBACK MessageHandler(HWND, UINT, WPARAM, LPARAM);
@@ -47,7 +45,6 @@ private:
 	HWND hwnd;
 
 	FileSystem* fileSystem;
-	FbxHelper* fbxHelper;
 	Graphics* graphics;
 	Input* input;
 };

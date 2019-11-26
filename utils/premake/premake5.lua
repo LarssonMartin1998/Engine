@@ -40,7 +40,6 @@ project(PRODUCT_NAME)
 
 	-- Include third-party libraries for this project.
 	-- dofile(libraries/thirpartylibrary.lua)
-	dofile("libraries/fbx.lua")
 	dofile("libraries/assimp.lua")
 
 	-- Global per-configuration settings.
