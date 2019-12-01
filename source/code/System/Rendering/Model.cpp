@@ -1,15 +1,18 @@
 #include "Model.h"
 
+#include <iostream>
 #include <fstream>
 #include <d3d11.h>
 
 #include "Texture.h"
 #include "Application.h"
 #include "FileSystem/FileSystem.h"
+#include "Assimp/scene.h"
+#include "Assimp/postprocess.h"
 
 Model::Model()
-	: vertexBuffer(nullptr)
-	, indexBuffer(nullptr)
+	: VertexBuffer(nullptr)
+	, IndexBuffer(nullptr)
 	, texture(nullptr)
 {
 
@@ -24,28 +27,34 @@ Model::~Model()
 {
 
 }
-
-bool Model::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* modelFilename, char* textureFilename)
+bool Model::Initialize(ID3D11Device* Device, ID3D11DeviceContext* DeviceContext, char* ModelFilename, char* TextureFilename)
 {
 	bool result;
+	Assimp::Importer* Importer = new Assimp::Importer();
 
-	result = LoadModel(modelFilename);
+	std::vector<aiMesh*> Meshes;
+	result = LoadModel(Importer, ModelFilename, OUT Meshes);
 	if (!result)
 	{
 		return false;
 	}
 
-	result = InitializeBuffers(device);
+	result = InitializeBuffers(Device, Meshes);
 	if (!result)
 	{
 		return false;
 	}
 
-	result = LoadTexture(device, deviceContext, textureFilename);
+	result = LoadTexture(Device, DeviceContext, TextureFilename);
 	if (!result)
 	{
 		return false;
 	}
+
+
+	Importer->FreeScene();
+	delete Importer;
+	Importer = nullptr;
 
 	return true;
 }
@@ -68,39 +77,51 @@ void Model::Render(ID3D11DeviceContext* deviceContext)
 }
 
 
-bool Model::InitializeBuffers(ID3D11Device* device)
+bool Model::InitializeBuffers(ID3D11Device* Device, std::vector<aiMesh*>& Meshes)
 {
-	// Create the vertex array.
-	VertexShaderType* vertices = new VertexShaderType[vertexCount];
-	if (!vertices)
+	// 1. Clear buffers.
+	Vertices.clear();
+	Indices.clear();
+
+	// 2. Initialize vertex buffer
+	for (unsigned I = 0; I < Meshes.size(); ++I)
 	{
-		return false;
-	}
+		aiMesh* Mesh = Meshes[I];
 
-	// Create the index array.
-	unsigned long* indices = new unsigned long[indexCount];
-	if (!indices)
-	{
-		return false;
-	}
+		for (unsigned J = 0; J < Mesh->mNumVertices; ++J)
+		{
+			VertexShaderType Vertex;
 
-	// Load the vertex array and index array with data.
-	for (int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
-	{
-		VertexShaderType& v = vertices[vertexIndex];
-		ModelData& md = modelData[vertexIndex];
+			Vertex.Position.x = Mesh->mVertices[J].x;
+			Vertex.Position.y = Mesh->mVertices[J].y;
+			Vertex.Position.z = Mesh->mVertices[J].z;
 
-		v.position = md.position;
-		v.texture = md.uv;
-		v.normal = md.normal;
+			Vertex.Normal.x = Mesh->mNormals[J].x;
+			Vertex.Normal.y = Mesh->mNormals[J].y;
+			Vertex.Normal.z = Mesh->mNormals[J].z;
 
-		indices[vertexIndex] = vertexIndex;
+			// Only supports a single text-coord atm.
+			Vertex.TexCoord.x = Mesh->mTextureCoords[0] ? Mesh->mTextureCoords[0][J].x : 0.0f;
+			Vertex.TexCoord.y = Mesh->mTextureCoords[0] ? Mesh->mTextureCoords[0][J].y : 0.0f;
+
+			Vertices.push_back(Vertex);
+		}
+
+		for (unsigned J = 0; J < Mesh->mNumFaces; ++J)
+		{
+			aiFace face = Mesh->mFaces[J];
+
+			for (unsigned K = 0; K < face.mNumIndices; K++)
+			{
+				Indices.push_back(face.mIndices[K]);
+			}
+		}
 	}
 
 	// Set up the description of the static vertex buffer.
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(VertexShaderType) * vertexCount;
+	vertexBufferDesc.ByteWidth = sizeof(VertexShaderType) * Vertices.size();
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
@@ -108,12 +129,12 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 
 	// Give the subresource structure a pointer to the vertex data.
 	D3D11_SUBRESOURCE_DATA vertexData;
-	vertexData.pSysMem = vertices;
+	vertexData.pSysMem = &Vertices[0];
 	vertexData.SysMemPitch = 0;
 	vertexData.SysMemSlicePitch = 0;
 
 	// Now create the vertex buffer.
-	HRESULT result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &vertexBuffer);
+	HRESULT result = Device->CreateBuffer(&vertexBufferDesc, &vertexData, &VertexBuffer);
 	if (FAILED(result))
 	{
 		return false;
@@ -122,7 +143,7 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	// Set up the description of the static index buffer.
 	D3D11_BUFFER_DESC indexBufferDesc;
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(unsigned long) * indexCount;
+	indexBufferDesc.ByteWidth = sizeof(unsigned long) * Indices.size();
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 	indexBufferDesc.MiscFlags = 0;
@@ -130,23 +151,16 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 
 	// Give the subresource structure a pointer to the index data.
 	D3D11_SUBRESOURCE_DATA indexData;
-	indexData.pSysMem = indices;
+	indexData.pSysMem = &Indices[0];
 	indexData.SysMemPitch = 0;
 	indexData.SysMemSlicePitch = 0;
 
 	// Create the index buffer.
-	result = device->CreateBuffer(&indexBufferDesc, &indexData, &indexBuffer);
+	result = Device->CreateBuffer(&indexBufferDesc, &indexData, &IndexBuffer);
 	if (FAILED(result))
 	{
 		return false;
 	}
-
-	// Release the arrays now that the vertex and index buffers have been created and loaded.
-	delete[] vertices;
-	vertices = nullptr;
-
-	delete[] indices;
-	indices = nullptr;
 
 	return true;
 }
@@ -155,17 +169,17 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 void Model::ReleaseBuffers()
 {
 	// Release the index buffer.
-	if (indexBuffer)
+	if (IndexBuffer)
 	{
-		indexBuffer->Release();
-		indexBuffer = 0;
+		IndexBuffer->Release();
+		IndexBuffer = 0;
 	}
 
 	// Release the vertex buffer.
-	if (vertexBuffer)
+	if (VertexBuffer)
 	{
-		vertexBuffer->Release();
-		vertexBuffer = 0;
+		VertexBuffer->Release();
+		VertexBuffer = 0;
 	}
 }
 
@@ -180,10 +194,10 @@ void Model::RenderBuffers(ID3D11DeviceContext* deviceContext)
 	offset = 0;
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
-	deviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+	deviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &stride, &offset);
 
 	// Set the index buffer to active in the input assembler so it can be rendered.
-	deviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	deviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -224,42 +238,33 @@ void Model::ReleaseTexture()
 }
 
 
-bool Model::LoadModel(char* filename)
+void Model::ProcessNode(aiNode* Node, const aiScene* Scene, OUT std::vector<aiMesh*>& Meshes)
 {
-	std::ifstream stream = Application::GetInstance()->GetFileSystem()->LoadFileToStream(filename);
-	char input;
-
-	// Read up to the value of vertex count.
-	stream.get(input);
-	while (input != ':')
+	for (unsigned I = 0; I < Node->mNumMeshes; ++I)
 	{
-		stream.get(input);
+		aiMesh* Mesh = Scene->mMeshes[Node->mMeshes[I]];
+		Meshes.push_back(Mesh);
 	}
 
-	// Read in the vertex count.
-	stream >> vertexCount;
-	indexCount = vertexCount;
-
-	modelData.clear();
-
-	// Read up to the beginning of the data.
-	stream.get(input);
-	while (input != ':')
+	for (unsigned I = 0; I < Node->mNumChildren; ++I)
 	{
-		stream.get(input);
+		ProcessNode(Node->mChildren[I], Scene, OUT Meshes);
 	}
-	stream.get(input);
-	stream.get(input);
+}
 
-	// Read in the vertex data.
-	for (int vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++)
+bool Model::LoadModel(Assimp::Importer* Importer, char* Filename, OUT std::vector<aiMesh*>& Meshes)
+{
+	std::string Path = Application::GetInstance()->GetFileSystem()->GetCorrectPath(Filename);
+	const aiScene* Scene = Importer->ReadFile(Path, aiProcess_Triangulate);
+
+	if (!Scene || Scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !Scene->mRootNode)
 	{
-		ModelData md;
-		stream >> md.position.x >> md.position.y >> md.position.z;
-		stream >> md.uv.x >> md.uv.y;
-		stream >> md.normal.x >> md.normal.y >> md.normal.z;
-		modelData.push_back(md);
+		std::cout << "ERROR::ASSIMP::" << Importer->GetErrorString() << std::endl;
+		return false;
 	}
+
+	std::string Directory = Path.substr(0, Path.find_last_of('/'));
+	ProcessNode(Scene->mRootNode, Scene, OUT Meshes);
 
 	return true;
 }

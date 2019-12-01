@@ -21,5 +21,5 @@ filter { "configurations:not Debug" }
 	}
 
 	links {
-		"assimp-vc142-mt",
+		"assimp-vc142-mt"
 	}

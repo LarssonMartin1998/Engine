@@ -61,11 +61,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	{
 		return false;
 	}
-	
-	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/box.fbx", "textures/stone01.tga");
-	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/suzanne.fbx", "textures/stone01.tga");
-	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/cube.txt", "textures/stone01.tga");
-	//result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/cube.txt", "textures/stone01.tga");
+
+	result = model->Initialize(direct3D->GetDevice(), direct3D->GetDeviceContext(), "models/suzanne.fbx", "textures/stone01.tga");
 
 	if (!result)
 	{
@@ -102,9 +99,9 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	light->diffuseColor.z = 1.0f;
 	light->diffuseColor.w = 1.0f;
 	
-	light->lightDirection.x = -0.5f;
-	light->lightDirection.y = 0.1f;
-	light->lightDirection.z = 1.0f;
+	light->lightDirection.x = 0.1f;
+	light->lightDirection.y = 1.0f;
+	light->lightDirection.z = -0.5f;
 
 	light->specularColor.x = 1.0f;
 	light->specularColor.y = 1.0f;
@@ -159,8 +156,8 @@ bool Graphics::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	camera->SetPosition(0.0f, 2.5f, -12.0f);
-	camera->SetRotation(0.0f, 0.0f, 0.0f);
+	camera->SetPosition(0.0f, -12.0f, 0.0f);
+	camera->SetRotation(-90.0f, 0.0f, 180.0f);
 
 	return true;
 }
@@ -334,7 +331,7 @@ bool Graphics::Render(float rotation)
 		direct3D->TurnOnZbuffer();
 	}
 
-	worldMatrix *= DirectX::XMMatrixRotationY(rotation);
+	worldMatrix *= DirectX::XMMatrixRotationZ(rotation);
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	model->Render(direct3D->GetDeviceContext());
