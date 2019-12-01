@@ -1,10 +1,25 @@
 filter {}
+
 	includedirs {
-		"../../../Thirdparty/Assimp/Include/"
+		"../../../Thirdparty/Assimp/Include/assimp/"
 	}
-	links {
-		"assimp-vc140-mt"
-	}
+
+filter { "configurations:Debug" }
+
 	libdirs {
-		"../../../Thirdparty/Assimp/Lib/"
+		"../../../Thirdparty/Assimp/Lib/Debug/"
+	}
+
+	links {
+		"assimp-vc142-mtd"
+	}
+
+filter { "configurations:not Debug" }
+
+	libdirs {
+		"../../../Thirdparty/Assimp/Lib/Release/"
+	}
+
+	links {
+		"assimp-vc142-mt",
 	}
