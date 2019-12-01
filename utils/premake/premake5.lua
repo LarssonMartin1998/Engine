@@ -1,6 +1,6 @@
 -- Please view the premake directory for more configuration options.
-require "settings"
-local modules = require "modules"
+require "Settings"
+local modules = require "Modules"
 
 solution(PRODUCT_NAME)
 	location "../../Source/"
@@ -12,8 +12,7 @@ solution(PRODUCT_NAME)
 	}
 	configurations {
 		"Debug",
-		"Release",
-		"Final"
+		"Release"
 	}
 
 group "Modules"
@@ -29,8 +28,10 @@ project(PRODUCT_NAME)
 	kind "WindowedApp"
 	language "C++"
 	characterset "MBCS"
-	files { "../../Source/Code/main.cpp" }
+	files { "../../Source/Code/Main.cpp" }
 	targetname "%{prj.name}_%{cfg.platform}_%{cfg.buildcfg}"
+	systemversion "latest"
+	toolset "v142"
 
 	warnings "Extra"
 	editandcontinue "Off"
@@ -40,7 +41,7 @@ project(PRODUCT_NAME)
 
 	-- Include third-party libraries for this project.
 	-- dofile(libraries/thirpartylibrary.lua)
-	dofile("libraries/assimp.lua")
+	dofile("Libraries/Assimp.lua")
 
 	-- Global per-configuration settings.
 
@@ -48,7 +49,7 @@ project(PRODUCT_NAME)
 
 		defines {
 			"DEBUG",
-			"NFINAL"
+			"NRELEASE"
 		}
 
 		symbols "On"
@@ -58,18 +59,7 @@ project(PRODUCT_NAME)
 
 		defines {
 			"NDEBUG",
-			"RELEASE",
-			"NFINAL"
-		}
-
-		symbols "On"
-		optimize "Speed"
-
-	filter { "configurations:Final" }
-
-		defines {
-			"NDEBUG",
-			"FINAL",
+			"RELEASE"
 		}
 
 		symbols "Off"
@@ -81,7 +71,7 @@ project(PRODUCT_NAME)
 
 		defines {
 			"WIN32",
-			"_WINDOWS",
+			"_WINDOWS"
 		}
 
 		flags {
@@ -111,17 +101,13 @@ project(PRODUCT_NAME)
 
 		targetdir "../../Binaries/x86/Release/"
 
-	filter { "platforms:x86", "configurations:Final" }
-
-		targetdir "../../Binaries/x86/Final/"
-
 	-- x64
 
 	filter { "platforms:x64" }
 
 		defines {
 			"WIN64",
-			"_WINDOWS",
+			"_WINDOWS"
 		}
 
 		flags {
@@ -148,7 +134,3 @@ project(PRODUCT_NAME)
 	filter { "platforms:x64", "configurations:Release" }
 
 		targetdir "../../Binaries/x64/Release/"
-
-	filter { "platforms:x64", "configurations:Final" }
-
-		targetdir "../../Binaries/x64/Final/"
