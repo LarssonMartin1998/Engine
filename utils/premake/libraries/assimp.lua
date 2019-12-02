@@ -1,7 +1,7 @@
 filter {}
 
 	includedirs {
-		"../../../Thirdparty/Assimp/Include/assimp/"
+		"../../../Thirdparty/Assimp/Include/"
 	}
 
 filter { "configurations:Debug" }
